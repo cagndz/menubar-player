@@ -1,6 +1,6 @@
 [package]
 name = "menubar-player"
-version = "0.1.1"
+version = "0.1.2"
 description = "Audio player for YouTube in the macOS menu bar"
 authors = ["Carlos Agúndez"]
 license = "MIT"
