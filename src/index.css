@@ -187,9 +187,9 @@ input {
   .field::placeholder {
     color: var(--color-text-faint);
   }
+  /* One line, not two: the ring is drawn over the field's own border. */
   .field:is(:focus-visible, [data-force~="focus"]) {
-    border-color: var(--color-focus);
-    outline-offset: 1px;
+    outline-offset: -1px;
   }
 
   .button {
