@@ -3,7 +3,7 @@
 An audio player for YouTube that lives in the macOS menu bar. Paste a link, close the popover and keep working.
 It remembers where you stopped in every track.
 
-<!-- The demo video goes here, above the screenshot. -->
+https://github.com/user-attachments/assets/c99f2f21-9233-42c9-bb7d-761fd0f5e999
 
 <img src="assets/screenshot-playing-dark.png" width="840" alt="The popover open under its menu bar icon, playing a two-hour set, in dark mode">
 
