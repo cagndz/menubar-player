@@ -8,6 +8,9 @@ use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent}
 use tauri::{
     AppHandle, Emitter, LogicalPosition, Manager, Monitor, Rect, WebviewWindow, Window, WindowEvent,
 };
+use tauri_nspanel::{
+    tauri_panel, CollectionBehavior, ManagerExt, PanelLevel, StyleMask, WebviewWindowExt,
+};
 
 const POPOVER_LABEL: &str = "main";
 const TRAY_ID: &str = "main";
@@ -30,6 +33,18 @@ const REOPEN_GUARD: Duration = Duration::from_millis(200);
 // `quit_app`. If it doesn't answer in time, the app quits anyway.
 pub const QUIT_REQUESTED_EVENT: &str = "quit-requested";
 const QUIT_FLUSH_DEADLINE: Duration = Duration::from_millis(1500);
+
+// The popover is a panel rather than a plain window: a panel can take the
+// keyboard without making the app the active one, which is what lets it open
+// over another app's full screen space and leaves that app in front.
+tauri_panel! {
+    panel!(PopoverPanel {
+        config: {
+            can_become_key_window: true,
+            is_floating_panel: true
+        }
+    })
+}
 
 #[derive(Default)]
 pub struct PopoverState {
@@ -104,6 +119,26 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
         });
 
     builder.build(app)?;
+    Ok(())
+}
+
+/// Turns the popover's window into a panel. Called once, at startup.
+pub fn make_panel(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    let Some(window) = app.get_webview_window(POPOVER_LABEL) else {
+        return Ok(());
+    };
+    let panel = window.to_panel::<PopoverPanel<tauri::Wry>>()?;
+
+    panel.add_style_mask(StyleMask::empty().nonactivating_panel().into())?;
+    // Just above the menu bar, as the system's own menus are.
+    panel.set_level(PanelLevel::MainMenu.value() + 1);
+    panel.set_collection_behavior(
+        CollectionBehavior::new()
+            .can_join_all_spaces()
+            .stationary()
+            .full_screen_auxiliary()
+            .into(),
+    );
     Ok(())
 }
 
@@ -196,14 +231,12 @@ fn request_quit(app: &AppHandle) {
     });
 }
 
-/// Hides the popover and gives keyboard focus back to the app that had it.
+/// Hides the popover. The app in front never stopped being the active one, so
+/// the keyboard goes back to it by itself.
 pub fn hide_popover(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(POPOVER_LABEL) {
         let _ = window.hide();
     }
-    // Without this the app stays active with no window, swallowing keystrokes.
-    #[cfg(target_os = "macos")]
-    let _ = app.hide();
 }
 
 fn toggle_popover(app: &AppHandle, icon_rect: Rect) {
@@ -249,8 +282,17 @@ pub fn show_popover(app: &AppHandle) {
 
 fn show_under_icon(window: &WebviewWindow, icon_rect: Rect) {
     position_under_icon(window, icon_rect);
-    let _ = window.show();
-    let _ = window.set_focus();
+
+    // Not `set_focus`, which would activate the app. The panel is brought
+    // forward and given the keyboard as it is, with the webview still its
+    // first responder.
+    let app = window.app_handle().clone();
+    let _ = window.run_on_main_thread(move || {
+        if let Ok(panel) = app.get_webview_panel(POPOVER_LABEL) {
+            panel.order_front_regardless();
+            panel.make_key_window();
+        }
+    });
 }
 
 fn position_under_icon(window: &WebviewWindow, icon_rect: Rect) {

@@ -71,7 +71,7 @@ fn set_tray_state(app: AppHandle, playing: bool) {
     let _ = tray::set_playing(&app, playing);
 }
 
-/// Closes the popover from the webview (Escape).
+/// Updates the menu behind a right click on the menu bar icon.
 #[tauri::command]
 fn set_tray_menu(app: AppHandle, menu: tray::MenuState) {
     let _ = tray::set_menu(&app, menu);
@@ -82,6 +82,7 @@ fn show_popover(app: AppHandle) {
     tray::show_popover(&app);
 }
 
+/// Closes the popover from the webview (Escape).
 #[tauri::command]
 fn hide_popover(app: AppHandle) {
     tray::hide_popover(&app);
@@ -107,6 +108,7 @@ pub fn run() {
         // Registered first: a second copy of the app ends here, before it adds
         // another icon or opens the library the first one is writing.
         .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
+        .plugin(tauri_nspanel::init())
         .manage(tray::PopoverState::default())
         .manage(tray::TrayMenu::default())
         .setup(|app| {
@@ -118,6 +120,7 @@ pub fn run() {
             app.manage(TrackStore::load(&data_dir));
             app.manage(RateLimiter::load(&data_dir));
 
+            tray::make_panel(app.handle())?;
             tray::create(app.handle())?;
             Ok(())
         })

@@ -25,6 +25,10 @@ tauri-plugin-single-instance = "2"
 smappservice-rs = "0.1"
 # Only to kill yt-dlp together with the helpers it starts, when it hangs.
 libc = "0.2"
+# Turns the popover's window into a panel, which can take the keyboard without
+# activating the app; without that it can't open over a full screen app. Pinned:
+# it changes the window's class at runtime, so updates are taken on purpose.
+tauri-nspanel = "=2.1.1"
 
 [profile.release]
 codegen-units = 1
