@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  # Pushing a tag such as v0.1.2 builds the app and publishes the release.
+  push:
+    tags: ["v*"]
+  # Run by hand, it only builds: the DMG is kept as an artifact of the run.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # Apple Silicon, the only architecture the app is built for.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - run: pnpm install --frozen-lockfile
+
+      - name: Read the version
+        id: version
+        run: |
+          version=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "v$version" ]]; then
+            echo "::error::The tag is $GITHUB_REF_NAME but the app says $version"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Build the app and its DMG
+        run: pnpm tauri build
+        env:
+          # Arranges the DMG window as a build on a Mac does; in CI Tauri skips it otherwise.
+          TAURI_BUNDLER_DMG_IGNORE_CI: true
+
+      - name: Name the DMG
+        id: dmg
+        run: |
+          dmg="Menubar-Player-${{ steps.version.outputs.version }}.dmg"
+          cp src-tauri/target/release/bundle/dmg/*.dmg "$dmg"
+          echo "file=$dmg" >> "$GITHUB_OUTPUT"
+          # The Homebrew cask needs this checksum.
+          {
+            echo "### $dmg"
+            echo '```'
+            shasum -a 256 "$dmg"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.dmg.outputs.file }}
+          path: ${{ steps.dmg.outputs.file }}
+
+      - name: Publish the release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The checkout keeps the tag without its message, which is the release notes.
+          git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          {
+            git tag -l --format='%(contents)' "$GITHUB_REF_NAME"
+            echo
+            echo 'Update with `brew upgrade --cask menubar-player`, or download the DMG below.'
+          } > notes.md
+          gh release create "$GITHUB_REF_NAME" "${{ steps.dmg.outputs.file }}" \
+            --title "Menubar Player ${{ steps.version.outputs.version }}" \
+            --notes-file notes.md \
+            --latest
