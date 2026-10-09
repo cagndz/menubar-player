@@ -1,0 +1,13 @@
+node_modules
+dist
+*.log
+*.local
+.DS_Store
+.vscode
+.idea
+
+# Local data that runs or tests may leave behind
+sessions.json
+sessions.json.bak
+rate_limit.json
+*.tmp

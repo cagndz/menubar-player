@@ -1,0 +1,593 @@
+@import "tailwindcss";
+@import "@fontsource-variable/inter";
+
+/* ---------------------------------------------------------------------------
+   Tokens. Names are semantic: components never mention a colour, so the two
+   themes are just two sets of values. Dark is the default; the light set
+   further down takes over when the system is in light mode.
+   Both are checked for contrast by `pnpm contrast` (scripts/contrast.mjs).
+   ------------------------------------------------------------------------ */
+@theme {
+  /* Surfaces: cool near-blacks, deepest first */
+  --color-surface-0: #0f1011; /* the popover */
+  --color-surface-1: #17181a; /* row on hover, text field */
+  --color-surface-2: #1f2023; /* pressed, main button */
+  --color-surface-3: #2a2b2f; /* main button on hover */
+  --color-line: #23252a; /* decorative hairlines only */
+  --color-track: #6b6f76; /* slider tracks: they are the control */
+
+  --color-text: #f7f8f8;
+  --color-text-muted: #8a8f98;
+  --color-text-faint: #7c818a; /* placeholder, disabled */
+
+  /* No accent colour: emphasis is the text colour itself, and the only hue is the error red. */
+  --color-focus: #d0d6e0; /* keyboard focus ring */
+  --color-edge: rgb(255 255 255 / 0.07); /* hairline that defines the window and what floats in it */
+  --color-danger: #eb5757;
+  --color-danger-surface: #2a1618;
+
+  /* Inter ships with the app (no network); the system font covers what it lacks. */
+  --font-sans: "Inter Variable", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+
+  --text-label: 11px;
+  --text-label--line-height: 16px;
+  --text-small: 12px;
+  --text-small--line-height: 16px;
+  --text-body: 13px;
+  --text-body--line-height: 18px;
+
+  --radius-control: 6px;
+  --radius-window: 12px;
+}
+
+/* Read by Motion and by CSS outside utilities, so always emitted. */
+@theme static {
+  --ease-out: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-press: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+  --duration-press: 150ms;
+  --duration-morph: 180ms;
+  --duration-enter: 180ms;
+  --duration-exit: 120ms;
+  --delay-busy: 150ms;
+}
+
+/* Light theme: the same tokens when the system is in light mode. The webview
+   reports the system's appearance by itself and switches live; nothing has to
+   be detected or stored. */
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-surface-0: #fcfcfd;
+    --color-surface-1: #f1f2f4;
+    --color-surface-2: #e7e8eb;
+    --color-surface-3: #dcdde1;
+    --color-line: #e4e5e9;
+    --color-track: #7d828b;
+
+    --color-text: #1b1c1e;
+    --color-text-muted: #5c6068;
+    --color-text-faint: #666b73;
+
+    --color-focus: #3f434b;
+    --color-edge: rgb(0 0 0 / 0.1);
+    --color-danger: #c2291f;
+    --color-danger-surface: #fbe9e7;
+  }
+}
+
+/* ------------------------------------------------------------------ base */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html,
+body {
+  /* The window itself is transparent; the popover draws its own rounded shape. */
+  background: transparent;
+}
+
+:root {
+  /* Tells the webview both appearances are handled, so nothing native is drawn for the wrong one. */
+  color-scheme: dark light;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  color: var(--color-text);
+  /* Inter's alternates: open digits, single-storey shapes. */
+  font-feature-settings: "cv01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+input {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Keyboard focus ring: the same on every tab stop, a light neutral line.
+   `data-force` lets the preview page show a state without the real input.
+   In the base layer, so a component can move the ring (rows draw it inside). */
+@layer base {
+  :where(input, button, [tabindex]):is(:focus-visible, [data-force~="focus"]) {
+    outline: 1.5px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* The library's scrollbar, drawn with the palette instead of the system's. */
+.scroll-area {
+  scrollbar-gutter: stable;
+}
+.scroll-area::-webkit-scrollbar {
+  width: 10px;
+}
+.scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-area::-webkit-scrollbar-thumb {
+  /* The transparent border leaves a 4 px thumb inside a 10 px lane. */
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: var(--color-surface-3);
+  background-clip: content-box;
+  min-height: 28px;
+}
+.scroll-area::-webkit-scrollbar-thumb:hover {
+  background: var(--color-track);
+  background-clip: content-box;
+}
+
+/* ------------------------------------------------------------ components */
+
+@layer components {
+  .popover {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    background: var(--color-surface-0);
+    border-radius: var(--radius-window);
+    /* A faint inner edge defines the window; no drop shadow of our own. */
+    box-shadow: inset 0 0 0 1px var(--color-edge);
+  }
+
+  .caps {
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  /* ---- URL field and Add ---- */
+
+  .field {
+    min-width: 0;
+    flex: 1;
+    height: 28px;
+    padding-inline: 8px;
+    border-radius: var(--radius-control);
+    border: 1px solid var(--color-line);
+    background: var(--color-surface-1);
+    color: var(--color-text);
+    font-size: var(--text-body);
+  }
+  .field::placeholder {
+    color: var(--color-text-faint);
+  }
+  .field:is(:focus-visible, [data-force~="focus"]) {
+    border-color: var(--color-focus);
+    outline-offset: 1px;
+  }
+
+  .button {
+    height: 28px;
+    padding-inline: 12px;
+    border-radius: var(--radius-control);
+    background: var(--color-surface-2);
+    color: var(--color-text);
+    font-size: var(--text-body);
+    font-weight: 500;
+  }
+  .button:is(:hover, [data-force~="hover"]):not(:disabled) {
+    background: var(--color-surface-3);
+  }
+  .button:is(:active, [data-force~="active"]):not(:disabled) {
+    background: var(--color-line);
+  }
+  /* Pressing is felt more than seen: a 3 % dip, straight back on release. */
+  :is(.button, .icon-button):not(:disabled) {
+    transition: transform var(--duration-press) var(--ease-press);
+  }
+  :is(.button, .icon-button):is(:active, [data-force~="active"]):not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  .button:disabled {
+    color: var(--color-text-faint);
+    background: var(--color-surface-1);
+  }
+
+  .text-button {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* ---- library rows ---- */
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    padding-inline: 8px 4px;
+    border-radius: var(--radius-control);
+    color: var(--color-text);
+  }
+  .row:is(:hover, [data-force~="hover"]) {
+    background: var(--color-surface-1);
+  }
+  .row:is(:active, [data-force~="active"]) {
+    background: var(--color-surface-2);
+  }
+  /* Inside the row, so the scrolling list never clips it. */
+  .row:is(:focus-visible, [data-force~="focus"]) {
+    outline-offset: -1.5px;
+  }
+  .row[aria-current="true"] {
+    font-weight: 500;
+  }
+
+  .row-icon,
+  .row-remove {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    /* The state icon shows on hover or focus of the row, and always for the
+       current track. The X is the pointer's way to remove, so only the pointer
+       brings it out: a row focused from the keyboard shows the one thing Enter does. */
+    opacity: 0;
+    transition: opacity 100ms ease;
+  }
+  .row:is(:hover, :focus-visible, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-icon,
+  .row:is(:hover, [data-force~="hover"]) .row-remove,
+  .row[aria-current="true"] .row-icon {
+    opacity: 1;
+  }
+  /* The current track is told apart by its icon being there at all, in full white. */
+  .row[data-state="playing"] .row-icon {
+    color: var(--color-text);
+  }
+  .row[data-state="paused"] .row-icon {
+    color: var(--color-text-muted);
+  }
+  .row-remove:is(:hover, [data-force~="hover"]) {
+    color: var(--color-text);
+    background: var(--color-surface-3);
+  }
+
+  .row-duration {
+    flex-shrink: 0;
+    font-size: var(--text-small);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted);
+  }
+
+  /* ---- player buttons ---- */
+
+  .icon-button {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-control);
+    color: var(--color-text);
+  }
+  .icon-button:is(:hover, [data-force~="hover"]):not(:disabled) {
+    background: var(--color-surface-1);
+  }
+  .icon-button:is(:active, [data-force~="active"]):not(:disabled) {
+    background: var(--color-surface-2);
+  }
+  .icon-button:disabled {
+    opacity: 0.35;
+  }
+
+  /* ---- waiting ----
+     A spinner takes the place of a glyph or a label, in the same spot: both
+     are stacked, so nothing changes size. It waits a moment before showing,
+     so a wait too short to notice shows nothing at all. */
+
+  .busy-swap {
+    display: grid;
+    place-items: center;
+  }
+  .busy-swap > * {
+    grid-area: 1 / 1;
+    transition: opacity var(--duration-exit) var(--ease-out);
+  }
+  .busy-swap > .spinner {
+    opacity: 0;
+  }
+  .busy-swap[data-busy="true"] > * {
+    opacity: 0;
+    transition: opacity var(--duration-enter) var(--ease-out) var(--delay-busy);
+  }
+  .busy-swap[data-busy="true"] > .spinner {
+    opacity: 1;
+    /* Constant motion, so linear. */
+    animation: spin 0.8s linear infinite;
+  }
+  /* Waiting is not the same as unavailable: the button stays at full strength. */
+  .icon-button[data-busy="true"]:disabled {
+    opacity: 1;
+  }
+  .button[aria-busy="true"]:disabled {
+    color: var(--color-text);
+  }
+
+  /* The main action is told apart by size alone: a larger glyph, no plate behind it. */
+  .play-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* ---- elapsed time and duration, at either end of the progress bar ---- */
+
+  .time {
+    flex-shrink: 0;
+    /* Wide enough for 0:00:00, so the bar doesn't move as the digits change. */
+    min-width: 44px;
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text);
+  }
+  .time[data-end="true"] {
+    text-align: right;
+    color: var(--color-text-muted);
+  }
+  .time[data-idle="true"] {
+    color: var(--color-text-faint);
+  }
+
+  /* ---- sliders: progress and volume ----
+     A real range input sits on top, invisible, for keyboard and assistive
+     technology; what is seen is drawn underneath it. */
+
+  .slider {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 16px;
+    border-radius: 4px;
+    --slider-fill: var(--color-text);
+    touch-action: none;
+  }
+  .slider:has(input:focus-visible),
+  .slider[data-force~="focus"] {
+    outline: 1.5px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+  .slider > input[type="range"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    /* The pointer is handled by the slider itself, to the pixel. */
+    pointer-events: none;
+  }
+
+  .slider-track,
+  .slider-fill {
+    position: absolute;
+    inset-inline: 0;
+    top: 6px;
+    height: 4px;
+    border-radius: 2px;
+    transform-origin: left center;
+  }
+  .slider-track {
+    background: var(--color-track);
+  }
+  .slider-fill {
+    background: var(--slider-fill);
+  }
+
+  /* The thumb rides a rail as large as the slider, moved by transform only.
+     The time label has a rail of its own: it follows the pointer, so it must
+     never pick up the glide of a playing track. */
+  .slider-rail,
+  .slider-tip-rail {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .slider-thumb {
+    position: absolute;
+    left: -5px;
+    top: 3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--color-text);
+    opacity: 0;
+    transition: opacity 100ms ease;
+  }
+  /* A value that ticks along once a second glides between ticks; linear, since
+     it is constant motion. Never while dragging, seeking or paused. */
+  .slider[data-smooth="true"] :is(.slider-fill, .slider-rail) {
+    transition: transform 1s linear;
+  }
+  .slider:is(:hover, [data-force~="hover"], [data-force~="focus"], :has(input:focus-visible), [data-dragging="true"]):not([data-disabled="true"])
+    .slider-thumb {
+    opacity: 1;
+  }
+
+  .slider[data-state="recovering"] {
+    --slider-fill: var(--color-text-muted);
+  }
+  .slider[data-disabled="true"] .slider-fill {
+    display: none;
+  }
+  .slider[data-disabled="true"] .slider-track {
+    background: var(--color-line);
+  }
+
+  /* Vertical: the same parts turned a quarter, filling from the bottom. */
+  .slider[data-orientation="vertical"] {
+    flex: none;
+    width: 16px;
+    height: 88px;
+  }
+  .slider[data-orientation="vertical"] :is(.slider-track, .slider-fill) {
+    inset-inline: auto;
+    inset-block: 0;
+    top: 0;
+    left: 6px;
+    width: 4px;
+    height: auto;
+    transform-origin: center bottom;
+  }
+  .slider[data-orientation="vertical"] .slider-thumb {
+    left: 3px;
+    top: auto;
+    bottom: -5px;
+  }
+
+  /* Time under the pointer, for finding a spot in a long set. */
+  .slider-tip {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 4px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--color-surface-3);
+    color: var(--color-text);
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    pointer-events: none;
+    /* Centred on the pointer; fades and lifts a little as it appears. */
+    opacity: 0;
+    transform: translate(-50%, 2px);
+    transition:
+      opacity var(--duration-exit) var(--ease-out),
+      transform var(--duration-exit) var(--ease-out);
+  }
+  .slider-tip[data-shown="true"] {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* ---- volume: a button, with a vertical slider that opens above it ---- */
+
+  .volume {
+    position: relative;
+  }
+  .volume-flyout {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    /* Touches the button, so the pointer can travel from one to the other. */
+    padding: 10px 6px 8px;
+    margin-left: -14px;
+    border-radius: var(--radius-control);
+    background: var(--color-surface-2);
+    box-shadow: inset 0 0 0 1px var(--color-edge);
+    visibility: hidden;
+    opacity: 0;
+    /* Opens upwards from its button; leaves faster than it arrives. */
+    transform: translateY(4px) scale(0.98);
+    transform-origin: bottom center;
+    transition:
+      opacity var(--duration-exit) var(--ease-out),
+      transform var(--duration-exit) var(--ease-out),
+      visibility 0s linear var(--duration-exit);
+  }
+  .volume:is(:hover, :focus-within, [data-force~="open"]) .volume-flyout {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity var(--duration-enter) var(--ease-out),
+      transform var(--duration-enter) var(--ease-out),
+      visibility 0s;
+  }
+
+  /* ---- messages ---- */
+
+  .notice {
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+    color: var(--color-text-muted);
+  }
+  .notice[data-kind="error"] {
+    color: var(--color-danger);
+  }
+
+  .error-block {
+    padding: 6px 8px;
+    border-radius: var(--radius-control);
+    background: var(--color-danger-surface);
+    color: var(--color-danger);
+    font-size: var(--text-small);
+    line-height: var(--text-small--line-height);
+    overflow-wrap: anywhere;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Reduced motion: gentler, not absent. What only changes opacity stays; what
+   moves, glides or loops does not. */
+@media (prefers-reduced-motion: reduce) {
+  :is(.button, .icon-button):not(:disabled) {
+    transition: none;
+  }
+  :is(.button, .icon-button):is(:active, [data-force~="active"]):not(:disabled) {
+    transform: none;
+  }
+  .slider[data-smooth="true"] :is(.slider-fill, .slider-rail) {
+    transition: none;
+  }
+  .busy-swap[data-busy="true"] > .spinner {
+    animation: none;
+  }
+  .slider-tip,
+  .slider-tip[data-shown="true"] {
+    transform: translate(-50%, 0);
+    transition: opacity var(--duration-exit) linear;
+  }
+  .volume-flyout,
+  .volume:is(:hover, :focus-within, [data-force~="open"]) .volume-flyout {
+    transform: none;
+  }
+}

@@ -1,0 +1,104 @@
+/* Chrome of the design preview only; nothing here ships. */
+html,
+body,
+#root {
+  height: auto;
+}
+
+body {
+  overflow: auto;
+  padding: 24px;
+  /* A mid-grey checker shows the rounded corners and the edge of each window. */
+  background:
+    repeating-conic-gradient(#8d8d8d 0% 25%, #7a7a7a 0% 50%) 0 0 / 24px 24px;
+  color: #111;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+h1 {
+  font-size: 18px;
+}
+h2 {
+  margin-top: 32px;
+  font-size: 16px;
+}
+h3 {
+  margin-top: 20px;
+  font-size: 13px;
+}
+
+.preview-frames {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+.preview-frame {
+  margin: 0;
+}
+.preview-frame figcaption {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.preview-window {
+  width: 320px;
+  height: 400px;
+  color: var(--color-text);
+}
+.preview-window--auto {
+  height: auto;
+  padding: 4px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-0);
+}
+
+.preview-sheet {
+  max-width: 720px;
+}
+.preview-row,
+.preview-col {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.preview-col {
+  flex-direction: column;
+}
+.preview-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-0);
+  color: var(--color-text);
+}
+.preview-swatch > span {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+.preview-swatch > div {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.preview-note {
+  margin: 4px 0 0;
+  font-size: 11px;
+}
+
+/* A single popover on a clear page (?shot=…). */
+body:has(.preview-shot) {
+  padding: 0;
+  background: transparent;
+}
+.preview-shot figcaption {
+  display: none;
+}
