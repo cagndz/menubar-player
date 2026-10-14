@@ -29,7 +29,8 @@ const SCREEN_MARGIN: f64 = 8.0;
 
 // Clicking the tray icon while the popover is open blurs it first (hiding it)
 // and then delivers the click. Without this guard the click would reopen it.
-const REOPEN_GUARD: Duration = Duration::from_millis(200);
+// As long as the fade out, so a click after it has gone opens it again.
+const REOPEN_GUARD: Duration = Duration::from_millis(150);
 
 // The webview saves the playback position on this event and then calls
 // `quit_app`. If it doesn't answer in time, the app quits anyway.

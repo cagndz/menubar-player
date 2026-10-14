@@ -16,8 +16,9 @@ use objc2::Message;
 use objc2_app_kit::{NSAnimatablePropertyContainer, NSAnimationContext, NSWindow, NSWorkspace};
 use objc2_quartz_core::CAMediaTimingFunction;
 
+// Leaving is quicker than arriving: once the user is done, it gets out of the way.
 const FADE_IN: Duration = Duration::from_millis(180);
-const FADE_OUT: Duration = Duration::from_millis(200);
+const FADE_OUT: Duration = Duration::from_millis(150);
 /// Core Animation's ease-out: most of the change early, then a long settle.
 const EASE_OUT: [f64; 4] = [0.0, 0.0, 0.58, 1.0];
 
