@@ -26,15 +26,15 @@ const label = (element: HTMLElement) => element.getAttribute("aria-label") ?? el
 afterEach(cleanup);
 
 describe("PlayerControls", () => {
-  it("is tabbed through as bar, previous, play/pause, next, repeat", () => {
+  it("is tabbed through as bar, repeat, previous, play/pause, next, as it reads", () => {
     setup();
 
     expect(tabStops(document.body).map(label)).toEqual([
       "Progress",
+      "Repeat: all",
       "Previous track",
       "Pause",
       "Next track",
-      "Repeat: all",
     ]);
   });
 

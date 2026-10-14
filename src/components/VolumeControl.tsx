@@ -83,7 +83,7 @@ export function VolumeControl({ volume, muted, onVolumeChange, onToggleMute, for
         aria-label={strings.volume.button(volume, muted)}
         aria-expanded={shownOpen}
         aria-controls={panelId}
-        className="icon-button"
+        className="icon-button edge-end"
       >
         <LevelIcon />
       </button>

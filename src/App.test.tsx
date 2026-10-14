@@ -836,10 +836,10 @@ describe("volume", () => {
       "YouTube URL",
       "library row",
       "Progress",
+      "Repeat: all",
       "Previous track",
       "Pause",
       "Next track",
-      "Repeat: all",
       "Volume: 100%",
     ]);
   });
