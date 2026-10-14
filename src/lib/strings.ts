@@ -36,8 +36,8 @@ export const strings = {
   volume: {
     percent: (volume: number) => `${volume}%`,
     slider: (volume: number) => `Volume: ${volume}%`,
-    mute: (volume: number) => `Mute (volume ${volume}%)`,
-    unmute: (volume: number) => `Unmute (volume ${volume}%)`,
+    button: (volume: number, muted: boolean) => (muted ? `Volume: muted (${volume}%)` : `Volume: ${volume}%`),
+    mute: "Mute",
   },
   library: {
     heading: "Library",

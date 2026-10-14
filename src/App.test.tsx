@@ -15,6 +15,7 @@ const backend = vi.hoisted(() => ({
   setTrackPosition: vi.fn((_id: string, _position: number) => Promise.resolve()),
   deleteTrack: vi.fn((_id: string) => Promise.resolve([] as Track[])),
   restoreTrack: vi.fn((_track: Track) => Promise.resolve([] as Track[])),
+  hidePopover: vi.fn(() => Promise.resolve()),
 }));
 
 vi.mock("./lib/tauri", () => ({
@@ -25,7 +26,7 @@ vi.mock("./lib/tauri", () => ({
   deleteTrack: backend.deleteTrack,
   restoreTrack: backend.restoreTrack,
   checkConnectivity: () => Promise.resolve(true),
-  hidePopover: () => Promise.resolve(),
+  hidePopover: backend.hidePopover,
   setTrayState: backend.setTrayState,
   setTrayMenu: backend.setTrayMenu,
   onTrayAction: (handler: (action: "toggle" | "next") => void) => {
@@ -839,7 +840,6 @@ describe("volume", () => {
       "Pause",
       "Next track",
       "Repeat: all",
-      "Mute (volume 100%)",
       "Volume: 100%",
     ]);
   });
@@ -851,11 +851,40 @@ describe("volume", () => {
     fireEvent.change(slider, { target: { value: "40" } });
     expect(audio.volume).toBeCloseTo(0.4);
 
-    fireEvent.click(screen.getByRole("button", { name: "Mute (volume 40%)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Volume: 40%" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mute" }));
     expect(audio.volume).toBe(0);
+    expect(screen.getByRole("button", { name: "Volume: muted (40%)" })).toBeTruthy();
 
-    fireEvent.click(screen.getByRole("button", { name: "Unmute (volume 40%)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Mute" }));
     expect(audio.volume).toBeCloseTo(0.4);
+  });
+
+  it("mutes and unmutes with M, except while typing a link", async () => {
+    const { audio } = await playing();
+
+    fireEvent.keyDown(document.body, { key: "m" });
+    expect(audio.volume).toBe(0);
+    fireEvent.keyDown(document.body, { key: "M" });
+    expect(audio.volume).toBe(1);
+
+    fireEvent.keyDown(screen.getByRole("textbox", { name: "YouTube URL" }), { key: "m" });
+    fireEvent.keyDown(document.body, { key: "m", metaKey: true });
+    expect(audio.volume).toBe(1);
+  });
+
+  it("closes the volume panel on Escape, and only the next Escape hides the popover", async () => {
+    await playing();
+    backend.hidePopover.mockClear();
+    const button = screen.getByRole("button", { name: /^Volume/ });
+
+    fireEvent.click(button);
+    fireEvent.keyDown(button, { key: "Escape" });
+    expect(button.getAttribute("aria-expanded")).toBe("false");
+    expect(backend.hidePopover).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(button, { key: "Escape" });
+    expect(backend.hidePopover).toHaveBeenCalledOnce();
   });
 
   it("doesn't change with playback: only the user moves it", async () => {

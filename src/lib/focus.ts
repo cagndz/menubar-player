@@ -1,8 +1,10 @@
 const FOCUSABLE = "input:not([disabled]), button:not([disabled]), [tabindex]";
 
-/** Elements Tab stops at inside `root`, in order. */
+/** Elements Tab stops at inside `root`, in order. A closed panel is `inert`, so nothing in it counts. */
 export function tabStops(root: ParentNode): HTMLElement[] {
-  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((element) => element.tabIndex >= 0);
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (element) => element.tabIndex >= 0 && !element.closest("[inert]"),
+  );
 }
 
 /**

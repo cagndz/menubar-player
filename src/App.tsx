@@ -153,13 +153,16 @@ function App() {
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        void hidePopover();
+        // An open panel inside the popover closes first, on its own.
+        if (!document.querySelector('[aria-expanded="true"]')) void hidePopover();
       } else if (event.key === "Tab") {
         if (wrapTab(document.body, event.shiftKey)) event.preventDefault();
       } else if (event.key === " " && !isTextField(event.target)) {
         // Space is play/pause everywhere but the URL field, focused buttons included.
         event.preventDefault();
         if (!event.repeat) toggle();
+      } else if (event.key.toLowerCase() === "m" && !event.metaKey && !event.ctrlKey && !event.altKey && !isTextField(event.target)) {
+        if (!event.repeat) toggleMute();
       }
     };
     // Buttons click on Space keyup; swallow it so Space only ever means play/pause.
@@ -173,7 +176,7 @@ function App() {
       window.removeEventListener("keydown", onKeyDown, true);
       window.removeEventListener("keyup", onKeyUp, true);
     };
-  }, [toggle]);
+  }, [toggle, toggleMute]);
 
   const urlInputRef = useRef<UrlInputHandle>(null);
   const trackListRef = useRef<TrackListHandle>(null);

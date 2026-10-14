@@ -25,6 +25,10 @@
   --color-edge: rgb(255 255 255 / 0.07); /* hairline that defines the window and what floats in it */
   --color-danger: #eb5757;
   --color-danger-surface: #2a1618;
+  --color-surface-float: #1f2023; /* what opens over the popover: a step up from it */
+
+  /* Soft and wide, so it lifts without drawing a dark outline. Dark needs more of it to show. */
+  --shadow-float: 0 8px 24px rgb(0 0 0 / 0.45), 0 2px 6px rgb(0 0 0 / 0.3);
 
   /* Inter ships with the app (no network); the system font covers what it lacks. */
   --font-sans: "Inter Variable", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
@@ -50,6 +54,9 @@
   --duration-enter: 180ms;
   --duration-exit: 120ms;
   --delay-busy: 150ms;
+  /* Panels that open from a button: quick out of the gate, a long soft landing. */
+  --ease-pop: cubic-bezier(0.2, 0, 0, 1);
+  --duration-pop: 150ms;
 }
 
 /* Light theme: the same tokens when the system is in light mode. The webview
@@ -72,6 +79,9 @@
     --color-edge: rgb(0 0 0 / 0.1);
     --color-danger: #c2291f;
     --color-danger-surface: #fbe9e7;
+    --color-surface-float: #ffffff;
+
+    --shadow-float: 0 8px 24px rgb(0 0 0 / 0.12), 0 2px 6px rgb(0 0 0 / 0.06);
   }
 }
 
@@ -503,39 +513,59 @@ input {
     transform: translate(-50%, 0);
   }
 
-  /* ---- volume: a button, with a vertical slider that opens above it ---- */
+  /* ---- volume: a button that opens a panel with a slider and a mute toggle ----
+     The panel is placed against the player as a whole (the footer), not the
+     button, so it always opens over the library and never covers the title,
+     the times or the controls, whatever the footer holds at the time. */
 
-  .volume {
+  .player {
     position: relative;
   }
   .volume-flyout {
     position: absolute;
-    left: 50%;
-    bottom: 100%;
-    /* Touches the button, so the pointer can travel from one to the other. */
-    padding: 10px 6px 8px;
-    margin-left: -14px;
-    border-radius: var(--radius-control);
-    background: var(--color-surface-2);
-    box-shadow: inset 0 0 0 1px var(--color-edge);
+    /* The footer's padding: its right edge lines up with everything else. */
+    right: 12px;
+    bottom: calc(100% + 6px);
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 4px 4px;
+    border: 1px solid var(--color-edge);
+    border-radius: 8px;
+    background: var(--color-surface-float);
+    box-shadow: var(--shadow-float);
     visibility: hidden;
     opacity: 0;
-    /* Opens upwards from its button; leaves faster than it arrives. */
-    transform: translateY(4px) scale(0.98);
-    transform-origin: bottom center;
+    /* Grows out of its button, which sits below it: the origin is the button's centre. */
+    transform: translateY(4px) scale(0.96);
+    transform-origin: calc(100% - 2px) calc(100% + 79px);
     transition:
-      opacity var(--duration-exit) var(--ease-out),
-      transform var(--duration-exit) var(--ease-out),
-      visibility 0s linear var(--duration-exit);
+      opacity var(--duration-pop) var(--ease-pop),
+      transform var(--duration-pop) var(--ease-pop),
+      visibility 0s linear var(--duration-pop);
   }
-  .volume:is(:hover, :focus-within, [data-force~="open"]) .volume-flyout {
+  .volume[data-open="true"] .volume-flyout {
     visibility: visible;
     opacity: 1;
     transform: none;
     transition:
-      opacity var(--duration-enter) var(--ease-out),
-      transform var(--duration-enter) var(--ease-out),
+      opacity var(--duration-pop) var(--ease-pop),
+      transform var(--duration-pop) var(--ease-pop),
       visibility 0s;
+  }
+  .volume-flyout .icon-button {
+    color: var(--color-text-muted);
+  }
+  .volume-flyout .icon-button:is(:hover, [data-force~="hover"]) {
+    color: var(--color-text);
+    background: var(--color-surface-3);
+  }
+  /* Muted is a state you can see: the toggle stays lit while it holds. */
+  .volume-flyout .icon-button[aria-pressed="true"] {
+    color: var(--color-text);
+    background: var(--color-surface-3);
   }
 
   /* ---- messages ---- */
@@ -587,7 +617,7 @@ input {
     transition: opacity var(--duration-exit) linear;
   }
   .volume-flyout,
-  .volume:is(:hover, :focus-within, [data-force~="open"]) .volume-flyout {
+  .volume[data-open="true"] .volume-flyout {
     transform: none;
   }
 }
