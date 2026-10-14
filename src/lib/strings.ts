@@ -16,7 +16,7 @@ export const strings = {
     : null,
   urlInput: {
     label: "YouTube URL",
-    placeholder: "https://www.youtube.com/watch?v=…",
+    placeholder: "Paste a YouTube link",
     submit: "Add",
     adding: "Adding…",
   },
