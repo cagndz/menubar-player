@@ -36,7 +36,7 @@ async fn check_connectivity() -> bool {
 }
 
 #[tauri::command]
-fn list_tracks(store: State<TrackStore>) -> Vec<Track> {
+fn list_tracks(store: State<TrackStore>) -> Result<Vec<Track>, AppError> {
     store.list()
 }
 

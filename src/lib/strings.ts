@@ -66,5 +66,6 @@ export const strings = {
     cantReachYoutube: "Can't reach YouTube. Check your connection.",
     recoveryFailed: "Couldn't resume this track.",
     storageFailed: "Couldn't save your library. Check your disk space, then try again.",
+    libraryNewer: "Your library was saved by a newer version of Menubar Player. Update the app to open it; nothing has been changed.",
   },
 } as const;

@@ -6,6 +6,7 @@ import type { ResolvedAudio, Track } from "./lib/tauri";
 
 const backend = vi.hoisted(() => ({
   library: [] as Track[],
+  listError: null as unknown,
   resolveAudio: vi.fn(),
   upsertTrack: vi.fn(),
   setTrayState: vi.fn((_playing: boolean) => Promise.resolve()),
@@ -21,7 +22,7 @@ const backend = vi.hoisted(() => ({
 vi.mock("./lib/tauri", () => ({
   resolveAudio: backend.resolveAudio,
   upsertTrack: backend.upsertTrack,
-  listTracks: () => Promise.resolve(backend.library),
+  listTracks: () => (backend.listError ? Promise.reject(backend.listError) : Promise.resolve(backend.library)),
   setTrackPosition: backend.setTrackPosition,
   deleteTrack: backend.deleteTrack,
   restoreTrack: backend.restoreTrack,
@@ -225,6 +226,21 @@ describe("menu bar icon", () => {
     Object.defineProperty(audio, "readyState", { configurable: true, get: () => 4 });
     await act(async () => void audio.dispatchEvent(new Event("pause")));
     expect(backend.setTrayState).toHaveBeenLastCalledWith(false);
+  });
+});
+
+describe("a library from a newer version", () => {
+  it("says so instead of showing an empty library", async () => {
+    backend.listError = { code: "library_newer", detail: null };
+    try {
+      render(<App />);
+      expect(await screen.findByRole("alert")).toHaveProperty(
+        "textContent",
+        "Your library was saved by a newer version of Menubar Player. Update the app to open it; nothing has been changed.",
+      );
+    } finally {
+      backend.listError = null;
+    }
   });
 });
 

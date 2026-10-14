@@ -9,6 +9,7 @@ const MESSAGE_BY_CODE: Record<string, string> = {
   ytdlp_failed: strings.errors.resolveFailed,
   rate_limited: strings.errors.rateLimited,
   storage_failed: strings.errors.storageFailed,
+  library_newer: strings.errors.libraryNewer,
 };
 
 function isAppError(value: unknown): value is AppError {
