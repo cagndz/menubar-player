@@ -53,8 +53,6 @@
   --delay-busy: 150ms;
   /* What unfolds from a button: quick out of the gate, a long soft landing. */
   --ease-pop: cubic-bezier(0.2, 0, 0, 1);
-  /* The same thing going back: slow to start, quickest as it arrives. */
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --duration-pop: 150ms;
 }
 
@@ -759,10 +757,12 @@ input {
        rounded ends never deform. The 8 px outside the box leave room for the
        thumb at the end of the line. */
     clip-path: inset(-8px 100% -8px 0);
+    /* Going back, the line is seen travelling all the way into the button:
+       it stays fully opaque and only fades over the last 30 % of the way. */
     transition:
-      clip-path 120ms var(--ease-in),
-      opacity 120ms var(--ease-in),
-      visibility 0s linear 120ms;
+      clip-path 160ms var(--ease-in-out),
+      opacity 48ms linear 112ms,
+      visibility 0s linear 160ms;
   }
   .volume[data-open="true"] .volume-slider {
     visibility: visible;
@@ -885,5 +885,10 @@ input {
   .volume-slider,
   .volume[data-open="true"] .volume-slider {
     clip-path: none;
+  }
+  .volume-slider {
+    transition:
+      opacity 160ms var(--ease-in-out),
+      visibility 0s linear 160ms;
   }
 }
