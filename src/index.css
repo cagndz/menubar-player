@@ -526,15 +526,27 @@ input {
 
   .time {
     flex-shrink: 0;
-    /* Wide enough for 0:00:00, so the bar doesn't move as the digits change. */
-    min-width: 44px;
+    /* Always as wide as the longest time, 0:00:00, so the bar keeps its length
+       between a short track and a long one. A hidden copy of that text sets the
+       width, which then follows whatever font is in use. */
+    display: inline-grid;
+    justify-items: start;
     font-size: var(--text-small);
     line-height: var(--text-small--line-height);
     font-variant-numeric: tabular-nums;
     color: var(--color-text);
   }
+  .time::before {
+    content: "0:00:00";
+    height: 0;
+    visibility: hidden;
+  }
+  .time::before,
+  .time > * {
+    grid-area: 1 / 1;
+  }
   .time[data-end="true"] {
-    text-align: right;
+    justify-items: end;
     color: var(--color-text-muted);
   }
   .time[data-idle="true"] {

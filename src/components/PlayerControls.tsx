@@ -72,7 +72,7 @@ export function PlayerControls(props: PlayerControlsProps) {
       {/* Elapsed time where the bar starts, total where it ends. */}
       <div className="flex items-center gap-2">
         <span className="time" data-slot="current-time" data-idle={!active}>
-          {formatTime(active ? position : 0)}
+          <span>{formatTime(active ? position : 0)}</span>
         </span>
         <Slider
           value={seekable ? position : 0}
@@ -95,7 +95,7 @@ export function PlayerControls(props: PlayerControlsProps) {
           }}
         />
         <span className="time" data-end="true" data-idle={!seekable}>
-          {formatTime(seekable ? duration : NaN)}
+          <span>{formatTime(seekable ? duration : NaN)}</span>
         </span>
       </div>
 
