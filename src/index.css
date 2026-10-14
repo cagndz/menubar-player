@@ -711,25 +711,41 @@ input {
     display: flex;
     align-items: center;
     min-width: 0;
+    /* As tall as the button's row and then some, so the pointer can drift
+       below or above the line without losing it; only the line is drawn. */
+    height: 32px;
     padding-left: 6px;
     visibility: hidden;
     opacity: 0;
-    /* Unrolls from the button. */
     transform: scaleX(0.6);
     transform-origin: left center;
+    /* Leaves by fading only, starting gently; the scale is reset once it is
+       out of sight, ready for the next entrance. */
     transition:
-      opacity var(--duration-pop) var(--ease-pop),
-      transform var(--duration-pop) var(--ease-pop),
-      visibility 0s linear var(--duration-pop);
+      opacity 180ms var(--ease-in-out),
+      transform 0s linear 180ms,
+      visibility 0s linear 180ms;
   }
   .volume[data-open="true"] .volume-slider {
     visibility: visible;
     opacity: 1;
     transform: none;
+    /* Unrolls from the button. */
     transition:
       opacity var(--duration-pop) var(--ease-pop),
       transform var(--duration-pop) var(--ease-pop),
       visibility 0s;
+  }
+  /* The slider itself takes the pointer over the whole 32 px, and so does the
+     range input on top of it. */
+  .volume-slider .slider::before {
+    content: "";
+    position: absolute;
+    inset: -8px 0;
+  }
+  .volume-slider .slider > input[type="range"] {
+    inset: -8px 0;
+    height: auto;
   }
 
   /* ---- messages ---- */

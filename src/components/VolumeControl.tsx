@@ -5,7 +5,7 @@ import { VolumeHighIcon, VolumeLowIcon, VolumeMutedIcon } from "./icons";
 import { Slider } from "./Slider";
 
 /** Grace before the slider hides once the pointer leaves, so crossing a seam doesn't make it blink. */
-const HIDE_DELAY_MS = 150;
+const HIDE_DELAY_MS = 250;
 
 interface VolumeControlProps {
   /** 0 to 100; kept while muted. */
