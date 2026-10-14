@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { DURATION_ENTER, DURATION_EXIT, EASE_OUT } from "../lib/motion";
 import { strings } from "../lib/strings";
+import { ScrollArea } from "./ScrollArea";
 
 interface PopoverViewProps {
   /** The URL field. */
@@ -51,7 +52,7 @@ export function PopoverView(props: PopoverViewProps) {
             {libraryError}
           </p>
         )}
-        <div className="min-h-0 flex-1 overflow-y-auto">{list}</div>
+        <ScrollArea>{list}</ScrollArea>
       </section>
 
       {/* The one thing that slides: it arrives after an action and leaves by itself. */}

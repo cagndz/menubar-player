@@ -158,6 +158,65 @@ input {
     color: var(--color-text-muted);
   }
 
+  /* ---- the library's scrollbar ----
+     Drawn over the rows instead of the system's, which takes 15 px of width
+     whenever a mouse is connected. A 10 px strip catches the pointer; the bar
+     inside it is 4 px, 6 px under the pointer (by scale, so nothing reflows). */
+
+  .scroll-area {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+  .scroll-viewport {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .scroll-viewport::-webkit-scrollbar {
+    display: none;
+  }
+  .scroll-thumb {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    width: 10px;
+    opacity: 0;
+    pointer-events: none;
+    /* Leaves slowly once things go quiet. */
+    transition: opacity 300ms var(--ease-out);
+  }
+  .scroll-thumb[data-overflow="false"] {
+    display: none;
+  }
+  .scroll-thumb:is([data-shown="true"], :hover) {
+    opacity: 1;
+    pointer-events: auto;
+    /* Arrives at once. */
+    transition-duration: 100ms;
+  }
+  .scroll-thumb::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    right: 2px;
+    width: 6px;
+    border-radius: 3px;
+    background: var(--color-surface-3);
+    transform: scaleX(0.6667);
+    transform-origin: right center;
+    transition:
+      transform var(--duration-press) var(--ease-out),
+      background-color var(--duration-press) var(--ease-out);
+  }
+  .scroll-thumb:is(:hover, [data-dragging="true"])::before {
+    transform: none;
+    background: var(--color-track);
+  }
+
   /* ---- URL field and Add ---- */
 
   .field {
@@ -349,6 +408,9 @@ input {
     color: var(--color-text-muted);
   }
   .row-remove {
+    /* Above the scrollbar's strip: where the two meet, the X takes the click. */
+    position: relative;
+    z-index: 2;
     display: grid;
     place-items: center;
     /* A 24 px target around a 16 px glyph; it reaches into the row's padding
@@ -736,6 +798,10 @@ input {
   /* The bars keep the menu bar icon's shape, still. */
   .level-bars i {
     animation: none;
+  }
+  .scroll-thumb,
+  .scroll-thumb::before {
+    transition: none;
   }
   .slider-tip,
   .slider-tip[data-shown="true"] {

@@ -39,6 +39,13 @@ vi.mock("./lib/tauri", () => ({
   debugLog: () => {},
 }));
 
+// jsdom lays nothing out, so the library's scrollbar has nothing to observe.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
 import App from "./App";
 import { clearStreams } from "./lib/resolver";
 import { tabStops } from "./lib/focus";
