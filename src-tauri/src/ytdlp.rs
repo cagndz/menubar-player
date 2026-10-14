@@ -10,7 +10,11 @@ use crate::error::AppError;
 
 // HLS only: the webview plays it natively, with correct duration and seeking.
 // YouTube's other audio formats are fragmented DASH, which <audio> fails to load.
-const FORMAT: &str = "234/233";
+// 234 (AAC, 128 kbps) or 233 (48 kbps) by name first, as always. A video with
+// several audio tracks (auto-dubbed ones) has them only under per-language
+// names (234-0, 234-1…), so the same HLS audio is then taken by protocol:
+// yt-dlp sorts the original language first, and the best quality within it.
+const FORMAT: &str = "234/233/ba[protocol^=m3u8]";
 const HLS_PROTOCOL_PREFIX: &str = "m3u8";
 
 const PRINT_TEMPLATE: &str = "%(.{id,title,duration,protocol,webpage_url,url})j";
@@ -277,6 +281,14 @@ fn child_path() -> std::ffi::OsString {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn asks_for_234_then_233_by_name_before_any_other_hls_audio() {
+        // Single-track videos must resolve exactly as before; the fallback only
+        // comes into play when those names don't exist (several audio tracks).
+        assert!(FORMAT.starts_with("234/233/"));
+        assert!(FORMAT.ends_with("ba[protocol^=m3u8]"));
+    }
 
     #[test]
     fn tells_an_outdated_yt_dlp_by_its_bug_report_note_on_the_error() {
