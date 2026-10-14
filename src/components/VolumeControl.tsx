@@ -71,7 +71,7 @@ export function VolumeControl({ volume, muted, onVolumeChange, onToggleMute, for
       ref={rootRef}
       data-level={level}
       data-open={shownOpen}
-      className="volume"
+      className="volume ml-3"
       onBlur={(event) => {
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false);
       }}
@@ -83,7 +83,7 @@ export function VolumeControl({ volume, muted, onVolumeChange, onToggleMute, for
         aria-label={strings.volume.button(volume, muted)}
         aria-expanded={shownOpen}
         aria-controls={panelId}
-        className="icon-button edge-end"
+        className="icon-button"
       >
         <LevelIcon />
       </button>

@@ -25,7 +25,7 @@ interface PlayerControlsProps {
   canNext: boolean;
   repeat: RepeatMode;
   onCycleRepeat: () => void;
-  /** Rendered at the right, opposite the repeat button (the volume). */
+  /** Rendered after the transport (the volume): its button, then whatever fills the last column. */
   children?: ReactNode;
 }
 
@@ -99,13 +99,16 @@ export function PlayerControls(props: PlayerControlsProps) {
         </span>
       </div>
 
-      {/* Three columns keep the transport dead centre, with repeat and volume mirrored at the sides. */}
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center">
-        <div className="flex items-center">
-          <button type="button" onClick={onCycleRepeat} aria-label={strings.controls.repeat[repeat]} className="icon-button edge-start">
-            <RepeatIcon />
-          </button>
-        </div>
+      {/* One group, centred: repeat, the transport, volume. The transport's
+          buttons sit close together and the two at the sides a little apart,
+          so it reads as one group with the transport at its heart. The outer
+          columns share what is left equally, which keeps the group centred;
+          the right one also holds the volume slider when it shows. */}
+      <div className="grid grid-cols-[1fr_auto_auto_auto_1fr] items-center">
+        <span />
+        <button type="button" onClick={onCycleRepeat} aria-label={strings.controls.repeat[repeat]} className="icon-button mr-3">
+          <RepeatIcon />
+        </button>
         <div className="flex items-center gap-1">
           <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label={strings.controls.previous} className="icon-button">
             <PreviousIcon />
@@ -127,7 +130,7 @@ export function PlayerControls(props: PlayerControlsProps) {
             <NextIcon />
           </button>
         </div>
-        <div className="flex items-center justify-end">{children}</div>
+        {children}
       </div>
     </div>
   );

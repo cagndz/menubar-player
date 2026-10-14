@@ -487,17 +487,6 @@ input {
     color: var(--color-text);
   }
 
-  /* The buttons at either end of the player have no plate at rest, so what
-     lines up with the times above them is the glyph, not the box: they reach
-     out into the popover's padding by the glyph's own inset (repeat's ink sits
-     8.25 px inside its box, the speaker's 7.4 px). The hover plate goes with them. */
-  .edge-start {
-    margin-left: -8px;
-  }
-  .edge-end {
-    margin-right: -7px;
-  }
-
   /* The main action is told apart by size alone: a larger glyph, no plate behind it. */
   .play-button {
     width: 36px;
