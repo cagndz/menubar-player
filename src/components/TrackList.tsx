@@ -147,20 +147,21 @@ export function TrackList(props: TrackListProps) {
               </button>
             </span>
             <span className="min-w-0 flex-1 truncate">{track.title}</span>
-            {track.duration > 0 && <span className="row-duration">{formatTime(track.duration)}</span>}
-            {/* Always takes its space, so appearing on hover never shifts the title. */}
-            <button
-              type="button"
-              tabIndex={-1}
-              aria-label={strings.library.remove}
-              onClick={(event) => {
-                event.stopPropagation();
-                onDelete(track);
-              }}
-              className="row-remove"
-            >
-              <RemoveIcon />
-            </button>
+            <span className="row-end">
+              {track.duration > 0 && <span className="row-duration">{formatTime(track.duration)}</span>}
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label={strings.library.remove}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDelete(track);
+                }}
+                className="row-remove"
+              >
+                <RemoveIcon />
+              </button>
+            </span>
           </li>
         );
       })}

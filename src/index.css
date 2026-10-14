@@ -134,29 +134,6 @@ input {
   }
 }
 
-/* The library's scrollbar, drawn with the palette instead of the system's. */
-.scroll-area {
-  scrollbar-gutter: stable;
-}
-.scroll-area::-webkit-scrollbar {
-  width: 10px;
-}
-.scroll-area::-webkit-scrollbar-track {
-  background: transparent;
-}
-.scroll-area::-webkit-scrollbar-thumb {
-  /* The transparent border leaves a 4 px thumb inside a 10 px lane. */
-  border: 3px solid transparent;
-  border-radius: 999px;
-  background: var(--color-surface-3);
-  background-clip: content-box;
-  min-height: 28px;
-}
-.scroll-area::-webkit-scrollbar-thumb:hover {
-  background: var(--color-track);
-  background-clip: content-box;
-}
-
 /* ------------------------------------------------------------ components */
 
 @layer components {
@@ -244,7 +221,10 @@ input {
     align-items: center;
     gap: 8px;
     height: 32px;
-    padding-inline: 8px 4px;
+    /* With the list's 4 px, the row ends 12 px from the window's edge, like the
+       field above and the player below. The scrollbar is the system's overlay
+       one, so it takes none of that space. */
+    padding-inline: 8px;
     border-radius: var(--radius-control);
     color: var(--color-text);
   }
@@ -262,8 +242,7 @@ input {
     font-weight: 500;
   }
 
-  .row-icon,
-  .row-remove {
+  .row-icon {
     display: grid;
     place-items: center;
     flex-shrink: 0;
@@ -271,14 +250,11 @@ input {
     height: 20px;
     border-radius: 4px;
     color: var(--color-text-muted);
-    /* The action shows on hover or focus of the row. The X is the pointer's way
-       to remove, so only the pointer brings it out: a row focused from the
-       keyboard shows the one thing Enter does. */
+    /* The action shows on hover or focus of the row. */
     opacity: 0;
     transition: opacity var(--duration-exit) var(--ease-out);
   }
-  .row:is(:hover, :focus-visible, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-icon,
-  .row:is(:hover, [data-force~="hover"]) .row-remove {
+  .row:is(:hover, :focus-visible, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-icon {
     opacity: 1;
   }
   .row[aria-current="true"] .row-icon {
@@ -335,16 +311,45 @@ input {
     animation-play-state: paused;
   }
 
-  .row-remove:is(:hover, [data-force~="hover"]) {
-    color: var(--color-text);
-    background: var(--color-surface-3);
-  }
-
-  .row-duration {
+  /* The duration and the X share the row's end. At rest it shows how long the
+     track is; on hover or focus, the way to remove it. The cell is as wide as
+     the wider of the two, so nothing in the row moves when they swap. */
+  .row-end {
+    display: grid;
     flex-shrink: 0;
+    align-items: center;
+    justify-items: end;
+  }
+  .row-end > * {
+    grid-area: 1 / 1;
+    transition: opacity var(--duration-exit) var(--ease-out);
+  }
+  .row-duration {
     font-size: var(--text-small);
     font-variant-numeric: tabular-nums;
     color: var(--color-text-muted);
+  }
+  .row-remove {
+    display: grid;
+    place-items: center;
+    /* A 24 px target around a 16 px glyph; it reaches into the row's padding
+       so the glyph, not the box, ends where the durations end. */
+    width: 24px;
+    height: 24px;
+    margin-right: -8px;
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    opacity: 0;
+  }
+  .row:is(:hover, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-remove {
+    opacity: 1;
+  }
+  .row:is(:hover, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-duration {
+    opacity: 0;
+  }
+  .row-remove:is(:hover, [data-force~="hover"]) {
+    color: var(--color-text);
+    background: var(--color-surface-3);
   }
 
   /* ---- player buttons ---- */

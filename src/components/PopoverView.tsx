@@ -51,7 +51,7 @@ export function PopoverView(props: PopoverViewProps) {
             {libraryError}
           </p>
         )}
-        <div className="scroll-area min-h-0 flex-1 overflow-y-auto">{list}</div>
+        <div className="min-h-0 flex-1 overflow-y-auto">{list}</div>
       </section>
 
       {/* The one thing that slides: it arrives after an action and leaves by itself. */}
