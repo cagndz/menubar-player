@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { focusIsFromKeyboard } from "../lib/inputModality";
 import { EASE_OUT, useReducedMotion } from "../lib/motion";
 
 /** Speed of the scroll, constant whatever the length. */
@@ -27,6 +28,7 @@ function translateX(element: Element): number {
  * A title that ends in an ellipsis when it doesn't fit, and scrolls round
  * while the pointer or the keyboard focus rests on what holds it (the nearest
  * `[data-marquee-host]`): only if it doesn't fit, and never with Reduce Motion.
+ * Focus from a click doesn't count, so a clicked row stops when the pointer leaves.
  *
  * The scroll is one continuous loop with no visible restart. While it runs, a
  * copy of the title follows it at a fixed gap; one pass moves everything by
@@ -58,14 +60,22 @@ export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
     return () => observer.disconnect();
   }, [text]);
 
-  // Hover or focus on the host; the popover hiding ends both at once.
+  // Hover, or keyboard focus on the host (a click's focus doesn't count, as
+  // for :focus-visible); the popover hiding ends both at once.
   useEffect(() => {
     const host = boxRef.current?.closest<HTMLElement>("[data-marquee-host]");
     if (!host) return;
+    let keyboardFocus = false;
     const engage = () => setEngaged(true);
-    const release = () => setEngaged(host.contains(document.activeElement));
+    const release = () => setEngaged(keyboardFocus);
+    const focusIn = () => {
+      keyboardFocus = focusIsFromKeyboard();
+      if (keyboardFocus) setEngaged(true);
+    };
     const releaseOnFocusOut = (event: FocusEvent) => {
-      if (!host.contains(event.relatedTarget as Node | null) && !host.matches(":hover")) setEngaged(false);
+      if (host.contains(event.relatedTarget as Node | null)) return;
+      keyboardFocus = false;
+      if (!host.matches(":hover")) setEngaged(false);
     };
     const hide = () => {
       setEngaged(false);
@@ -75,13 +85,13 @@ export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
     };
     host.addEventListener("pointerenter", engage);
     host.addEventListener("pointerleave", release);
-    host.addEventListener("focusin", engage);
+    host.addEventListener("focusin", focusIn);
     host.addEventListener("focusout", releaseOnFocusOut);
     window.addEventListener("blur", hide);
     return () => {
       host.removeEventListener("pointerenter", engage);
       host.removeEventListener("pointerleave", release);
-      host.removeEventListener("focusin", engage);
+      host.removeEventListener("focusin", focusIn);
       host.removeEventListener("focusout", releaseOnFocusOut);
       window.removeEventListener("blur", hide);
     };

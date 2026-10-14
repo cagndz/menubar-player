@@ -348,11 +348,12 @@ input {
     height: 20px;
     border-radius: 4px;
     color: var(--color-text-muted);
-    /* The action shows on hover or focus of the row. */
+    /* The action shows on hover or on keyboard focus of the row: the focus a
+       click leaves behind doesn't count, so only one row looks hovered. */
     opacity: 0;
     transition: opacity var(--duration-exit) var(--ease-out);
   }
-  .row:is(:hover, :focus-visible, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-icon {
+  .row:is(:hover, :focus-visible, [data-force~="hover"], [data-force~="focus"]) .row-icon {
     opacity: 1;
   }
   .row[aria-current="true"] .row-icon {
@@ -380,7 +381,7 @@ input {
   .level-bars[data-playing="false"] {
     color: var(--color-text-muted);
   }
-  .row:is(:hover, :focus-visible, :focus-within, [data-force~="hover"], [data-force~="focus"]) .level-bars {
+  .row:is(:hover, :focus-visible, [data-force~="hover"], [data-force~="focus"]) .level-bars {
     opacity: 0;
   }
 
@@ -476,11 +477,11 @@ input {
     z-index: -1;
     border-radius: 4px;
   }
-  .row:is(:hover, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-remove {
+  .row:is(:hover, :focus-visible, [data-force~="hover"], [data-force~="focus"]) .row-remove {
     opacity: 1;
   }
   /* Hidden, the duration lets the pointer through to the X under it. */
-  .row:is(:hover, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-duration {
+  .row:is(:hover, :focus-visible, [data-force~="hover"], [data-force~="focus"]) .row-duration {
     opacity: 0;
     pointer-events: none;
   }

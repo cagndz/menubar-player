@@ -114,9 +114,22 @@ describe("MarqueeText", () => {
     layout({ text: 600, box: 200 });
     const host = setup();
 
+    fireEvent.keyDown(document, { key: "ArrowDown" });
     act(() => host.focus());
     await act(() => vi.advanceTimersByTimeAsync(600));
     expect(animate).toHaveBeenCalledOnce();
+  });
+
+  it("ignores the focus a click leaves behind, so a clicked row stops once the pointer is gone", async () => {
+    layout({ text: 600, box: 200 });
+    const host = setup();
+
+    fireEvent.pointerEnter(host);
+    fireEvent.pointerDown(host);
+    act(() => host.focus());
+    fireEvent.pointerLeave(host);
+    await act(() => vi.advanceTimersByTimeAsync(5000));
+    expect(animate).not.toHaveBeenCalled();
   });
 
   it("stays still when the title fits", async () => {
