@@ -358,7 +358,7 @@ export function usePlayer(options: PlayerOptions) {
 
       giveUp(strings.errors.recoveryFailed);
     },
-    [clearLoadingTimeout],
+    [clearLoadingTimeout, positionStore],
   );
 
   useEffect(() => {
@@ -514,7 +514,7 @@ export function usePlayer(options: PlayerOptions) {
       document.removeEventListener("visibilitychange", onVisibility);
       clearLoadingTimeout();
     };
-  }, [clearLoadingTimeout, recover]);
+  }, [clearLoadingTimeout, recover, positionStore]);
 
   /**
    * Starts a track. Only how its stream URL is obtained differs between
@@ -607,7 +607,7 @@ export function usePlayer(options: PlayerOptions) {
         });
       }
     },
-    [armLoadingTimeout, clearLoadingTimeout, savePosition],
+    [armLoadingTimeout, clearLoadingTimeout, savePosition, positionStore],
   );
 
   /**
@@ -708,7 +708,7 @@ export function usePlayer(options: PlayerOptions) {
       positionStore.set(target);
       void savePosition();
     },
-    [savePosition],
+    [savePosition, positionStore],
   );
 
   /** Starts the current track over and plays it. */
