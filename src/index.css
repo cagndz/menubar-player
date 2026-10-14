@@ -849,7 +849,34 @@ input {
     height: auto;
   }
 
-  /* ---- messages ---- */
+  /* ---- messages ----
+     Errors can be selected and copied, unlike the rest of the popover. */
+
+  :is(.notice, .error-block) {
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
+  }
+  :is(.notice, .error-block) button {
+    cursor: default;
+  }
+
+  /* A command that fixes the error, on its own line, ready to copy. */
+  .command {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  .command code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: var(--text-small);
+  }
+  .command-copy {
+    width: 24px;
+    height: 24px;
+    color: inherit;
+  }
 
   .notice {
     font-size: var(--text-small);

@@ -88,6 +88,25 @@ export function RemoveIcon() {
   );
 }
 
+/** Two overlapping sheets. */
+export function CopyIcon() {
+  return (
+    <svg {...box} {...line}>
+      <rect x="5.75" y="5.75" width="7.5" height="7.5" rx="1.5" />
+      <path d="M10.25 3.25H4.25a1.5 1.5 0 0 0-1.5 1.5v6" />
+    </svg>
+  );
+}
+
+/** A tick. */
+export function CheckIcon() {
+  return (
+    <svg {...box} {...line}>
+      <path d="M3.5 8.25l3 3 6-6.5" />
+    </svg>
+  );
+}
+
 const loop =
   "M3 7.250V6.500a2 2 0 0 1 2-2h7.250M10.500 2.750 12.250 4.500 10.500 6.250M13 8.750v.750a2 2 0 0 1-2 2H3.750M5.500 13.250 3.750 11.500 5.500 9.750";
 

@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { DURATION_ENTER, DURATION_EXIT, EASE_OUT, useReducedMotion } from "../lib/motion";
 import { strings } from "../lib/strings";
+import { ErrorText } from "./ErrorText";
 import { MarqueeText } from "./MarqueeText";
 import { ScrollArea } from "./ScrollArea";
 
@@ -42,7 +43,7 @@ export function PopoverView(props: PopoverViewProps) {
         {urlInput}
         {addNotice && (
           <p role={addNotice.kind === "error" ? "alert" : "status"} className="notice" data-kind={addNotice.kind}>
-            {addNotice.text}
+            <ErrorText text={addNotice.text} />
           </p>
         )}
       </header>
@@ -51,7 +52,7 @@ export function PopoverView(props: PopoverViewProps) {
         <p className="caps px-2 py-1">{strings.library.heading}</p>
         {libraryError && (
           <p role="alert" className="error-block mx-2 mb-1">
-            {libraryError}
+            <ErrorText text={libraryError} />
           </p>
         )}
         <ScrollArea>{list}</ScrollArea>
@@ -80,7 +81,7 @@ export function PopoverView(props: PopoverViewProps) {
       <footer className="player flex flex-col gap-1.5 px-3 pt-2 pb-3">
         {error && (
           <p role="alert" className="error-block">
-            {error}
+            <ErrorText text={error} />
             {onRetry && (
               <>
                 {" "}

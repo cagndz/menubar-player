@@ -339,6 +339,16 @@ function Preview() {
       <div className="preview-shot">
         {shot === "volume" ? (
           <Frame name="Volume shown" volumeOpen />
+        ) : shot === "ytdlp" ? (
+          <Frame
+            name="yt-dlp missing"
+            status="idle"
+            currentId={null}
+            title={null}
+            addNotice={{ kind: "error", text: strings.errors.ytdlpMissing }}
+          />
+        ) : shot === "outdated" ? (
+          <Frame name="yt-dlp out of date" status="error" currentId="t2" error={strings.errors.ytdlpOutdated} retry />
         ) : shot === "empty" ? (
           <Frame name="Empty library" library={[]} currentId={null} status="idle" title={null} />
         ) : shot === "error" ? (
@@ -367,6 +377,14 @@ function Preview() {
           addNotice={{ kind: "error", text: strings.errors.notYoutube }}
         />
         <Frame name="Rate limited" status="error" currentId="t2" error={strings.errors.rateLimited} retry />
+        <Frame
+          name="yt-dlp missing"
+          status="idle"
+          currentId={null}
+          title={null}
+          addNotice={{ kind: "error", text: strings.errors.ytdlpMissing }}
+        />
+        <Frame name="yt-dlp out of date" status="error" currentId="t2" error={strings.errors.ytdlpOutdated} retry />
         <Frame name="Empty library" library={[]} currentId={null} status="idle" title={null} />
         <Frame
           name="Short track, already in the library"

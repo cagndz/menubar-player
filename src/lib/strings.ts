@@ -52,10 +52,18 @@ export const strings = {
     removedSeparator: " · ",
     undo: "Undo",
   },
+  // Shell commands offered next to an error, to copy into Terminal.
+  commands: {
+    installYtdlp: "brew install yt-dlp",
+    upgradeYtdlp: "brew upgrade yt-dlp",
+    copy: (command: string) => `Copy ${command}`,
+    copied: "Copied to the clipboard",
+  },
   errors: {
     invalidUrl: "That isn't a valid link. Paste one that starts with https://.",
     notYoutube: "That isn't a YouTube link. Paste a YouTube video URL.",
-    ytdlpMissing: "yt-dlp isn't installed. Run brew install yt-dlp, then try again.",
+    ytdlpMissing: "yt-dlp isn't installed. Install it with Homebrew, then try again.",
+    ytdlpOutdated: "yt-dlp couldn't read this video, probably because it's out of date. Update it with Homebrew, then try again.",
     noPlayableFormat: "This video has no playable audio format. Try a different video.",
     resolveFailed: "Couldn't load this video. Check the link and your connection, then try again.",
     resolveTimeout: "Loading took too long. Check your connection, then press play again.",

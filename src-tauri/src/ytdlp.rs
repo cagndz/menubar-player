@@ -26,6 +26,14 @@ const RATE_LIMIT_MARKERS: [&str; 4] = [
     "t available, try again later",
 ];
 
+// yt-dlp ends every unexpected extraction error (one that is likely a bug in
+// it, or YouTube having changed under an old version) with its bug-report
+// note, which asks to update first. Expected errors (unavailable, private,
+// age-restricted, bot check) never carry it. Matched on an ERROR line only:
+// warnings can carry the same note without being what made the run fail.
+const OUTDATED_MARKER: &str = "Confirm you are on the latest version";
+const OUTDATED_CODE: &str = "ytdlp_outdated";
+
 // A resolution takes a few seconds. Past this yt-dlp is stuck, and is killed
 // so that it neither piles up nor leaves whoever asked waiting forever.
 const RESOLVE_TIMEOUT: Duration = Duration::from_secs(30);
@@ -185,6 +193,11 @@ fn classify_failure(stderr: &str) -> &'static str {
         .any(|marker| stderr.contains(marker))
     {
         crate::rate_limit::RATE_LIMIT_CODE
+    } else if stderr
+        .lines()
+        .any(|line| line.starts_with("ERROR:") && line.contains(OUTDATED_MARKER))
+    {
+        OUTDATED_CODE
     } else if stderr.contains(YTDLP_FORMAT_UNAVAILABLE) {
         "no_playable_format"
     } else {
@@ -264,6 +277,31 @@ fn child_path() -> std::ffi::OsString {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn tells_an_outdated_yt_dlp_by_its_bug_report_note_on_the_error() {
+        let outdated = "WARNING: [youtube] x: Some formats may be missing\nERROR: [youtube] 0D5ArpBlCe4: Unable to extract yt initial data; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using  yt-dlp -U";
+        assert_eq!(classify_failure(outdated), "ytdlp_outdated");
+        // Older releases put one space where newer ones put two.
+        assert_eq!(
+            classify_failure("ERROR: [youtube] x: Failed to parse JSON; please report this issue on https://github.com/yt-dlp/yt-dlp/issues?q= , filling out the appropriate issue template. Confirm you are on the latest version using yt-dlp -U"),
+            "ytdlp_outdated"
+        );
+
+        // The note on a warning alone doesn't say why the run failed.
+        let note_on_warning = "WARNING: [youtube] x: Unable to extract uploader; please report this issue on  https://github.com/yt-dlp/yt-dlp/issues?q= . Confirm you are on the latest version using  yt-dlp -U\nERROR: [youtube] x: Video unavailable. This video is private";
+        assert_eq!(classify_failure(note_on_warning), "ytdlp_failed");
+        // Challenge-solving warnings are as often a missing JavaScript runtime: no guess.
+        assert_eq!(
+            classify_failure("WARNING: [youtube] x: n challenge solving failed: Some formats may be missing.\nERROR: [youtube] x: Requested format is not available. Use --list-formats"),
+            "no_playable_format"
+        );
+        // A bot check is a rate limit even if a note shows up as well.
+        assert_eq!(
+            classify_failure("ERROR: [youtube] x: Sign in to confirm you\u{2019}re not a bot. Confirm you are on the latest version"),
+            "rate_limited"
+        );
+    }
 
     #[test]
     fn classifies_rate_limits_apart_from_other_failures() {

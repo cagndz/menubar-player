@@ -5,6 +5,7 @@ const MESSAGE_BY_CODE: Record<string, string> = {
   invalid_url: strings.errors.invalidUrl,
   not_youtube: strings.errors.notYoutube,
   ytdlp_missing: strings.errors.ytdlpMissing,
+  ytdlp_outdated: strings.errors.ytdlpOutdated,
   no_playable_format: strings.errors.noPlayableFormat,
   ytdlp_failed: strings.errors.resolveFailed,
   rate_limited: strings.errors.rateLimited,
@@ -24,4 +25,15 @@ export function toUserMessage(error: unknown, fallback: string): string {
   }
   debugLog(`[error] ${String(error)}`);
   return fallback;
+}
+
+// The messages that come with a command to run: shown under them, ready to copy.
+const COMMAND_BY_MESSAGE: Record<string, string> = {
+  [strings.errors.ytdlpMissing]: strings.commands.installYtdlp,
+  [strings.errors.ytdlpOutdated]: strings.commands.upgradeYtdlp,
+};
+
+/** The command that fixes what a message describes, if there is one. */
+export function commandFor(message: string): string | null {
+  return COMMAND_BY_MESSAGE[message] ?? null;
 }
