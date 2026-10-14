@@ -1,4 +1,5 @@
 mod error;
+mod fade;
 mod login_item;
 mod rate_limit;
 mod tracks;

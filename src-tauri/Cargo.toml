@@ -29,6 +29,12 @@ libc = "0.2"
 # activating the app; without that it can't open over a full screen app. Pinned:
 # it changes the window's class at runtime, so updates are taken on purpose.
 tauri-nspanel = "=2.1.1"
+# The popover's fade: AppKit's animation context on the window's own opacity.
+# All three already come with tauri-nspanel; named here for the parts it uses.
+block2 = "0.6"
+objc2 = "0.6"
+objc2-app-kit = { version = "0.3", features = ["NSAccessibility", "NSAnimation", "NSAnimationContext", "NSResponder", "NSWindow", "NSWorkspace", "block2", "objc2-quartz-core"] }
+objc2-quartz-core = { version = "0.3", features = ["CAMediaTimingFunction"] }
 
 [profile.release]
 codegen-units = 1

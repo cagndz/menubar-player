@@ -1,6 +1,7 @@
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+use crate::fade::Fader;
 use serde::Deserialize;
 use tauri::image::Image;
 use tauri::menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem};
@@ -50,6 +51,7 @@ tauri_panel! {
 #[derive(Default)]
 pub struct PopoverState {
     hidden_by_blur_at: Mutex<Option<Instant>>,
+    fade: Fader,
 }
 
 /// Play/pause or next chosen in the tray menu; the webview carries it out.
@@ -238,12 +240,32 @@ fn request_quit(app: &AppHandle) {
     });
 }
 
-/// Hides the popover. The app in front never stopped being the active one, so
-/// the keyboard goes back to it by itself.
+/// Hides the popover with a fade; every way of closing it comes through here
+/// (Escape, a click outside, the icon, switching apps). The app in front
+/// never stopped being the active one, so the keyboard goes back to it by itself.
 pub fn hide_popover(app: &AppHandle) {
-    if let Some(window) = app.get_webview_window(POPOVER_LABEL) {
-        let _ = window.hide();
-    }
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        let Ok(panel) = handle.get_webview_panel(POPOVER_LABEL) else {
+            return;
+        };
+        let fade = handle.state::<PopoverState>().fade.clone();
+        let hide_with = handle.clone();
+        fade.fade_out(panel.as_panel(), move || {
+            if let Some(window) = hide_with.get_webview_window(POPOVER_LABEL) {
+                let _ = window.hide();
+            }
+        });
+    });
+}
+
+/// Shown, or fading in; a popover fading out counts as closed.
+fn is_showing(app: &AppHandle) -> bool {
+    app.get_webview_panel(POPOVER_LABEL).is_ok_and(|panel| {
+        app.state::<PopoverState>()
+            .fade
+            .is_showing(panel.as_panel())
+    })
 }
 
 fn toggle_popover(app: &AppHandle, icon_rect: Rect) {
@@ -251,7 +273,7 @@ fn toggle_popover(app: &AppHandle, icon_rect: Rect) {
         return;
     };
 
-    if window.is_visible().unwrap_or(false) {
+    if is_showing(app) {
         hide_popover(app);
         return;
     }
@@ -275,7 +297,7 @@ pub fn show_popover(app: &AppHandle) {
     let Some(window) = app.get_webview_window(POPOVER_LABEL) else {
         return;
     };
-    if window.is_visible().unwrap_or(false) {
+    if is_showing(app) {
         return;
     }
     let Some(icon_rect) = app
@@ -293,11 +315,15 @@ fn show_under_icon(window: &WebviewWindow, icon_rect: Rect) {
     // Not `set_focus`, which would activate the app. The panel is brought
     // forward and given the keyboard as it is, with the webview still its
     // first responder.
+    // It fades in, or turns around if it was fading out.
     let app = window.app_handle().clone();
     let _ = window.run_on_main_thread(move || {
         if let Ok(panel) = app.get_webview_panel(POPOVER_LABEL) {
-            panel.order_front_regardless();
-            panel.make_key_window();
+            let fade = app.state::<PopoverState>().fade.clone();
+            fade.fade_in(panel.as_panel(), || {
+                panel.order_front_regardless();
+                panel.make_key_window();
+            });
         }
     });
 }
@@ -395,7 +421,7 @@ pub fn handle_window_event(window: &Window, event: &WindowEvent) {
         let state = window.state::<PopoverState>();
         *state.hidden_by_blur_at.lock().unwrap() = Some(Instant::now());
         // Hide instead of close so the webview (and its <audio>) keeps playing.
-        let _ = window.hide();
+        hide_popover(window.app_handle());
     }
 }
 
