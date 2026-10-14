@@ -157,7 +157,7 @@ export const TrackList = memo(function TrackList(props: TrackListProps) {
               <button
                 type="button"
                 tabIndex={-1}
-                aria-label={strings.library.remove}
+                aria-label={strings.library.remove(track.title)}
                 onClick={(event) => {
                   event.stopPropagation();
                   onDelete(track);

@@ -675,7 +675,7 @@ describe("saved positions come from disk, not from the list held in React", () =
     expect(onDisk("a").position).toBe(55);
 
     await act(async () => {
-      fireEvent.click(screen.getAllByRole("button", { name: "Remove track" })[0]);
+      fireEvent.click(screen.getByRole("button", { name: "Remove Track a" }));
     });
     await act(async () => {
       fireEvent.click(await screen.findByRole("button", { name: "Undo" }));
@@ -806,7 +806,7 @@ describe("reusing a stream resolved earlier", () => {
     expect(resolutionsOf("a")).toBe(1);
 
     await act(async () => {
-      fireEvent.click(screen.getAllByRole("button", { name: "Remove track" })[0]);
+      fireEvent.click(screen.getByRole("button", { name: "Remove Track a" }));
     });
     await act(async () => {
       fireEvent.click(await screen.findByRole("button", { name: "Undo" }));

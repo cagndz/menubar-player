@@ -47,7 +47,7 @@ export const strings = {
     pause: (title: string) => `Pause ${title}`,
     nowPlaying: "Now playing",
     paused: "Paused",
-    remove: "Remove track",
+    remove: (title: string) => `Remove ${title}`,
     removed: "Track removed",
     removedSeparator: " · ",
     undo: "Undo",

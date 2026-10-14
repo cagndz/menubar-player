@@ -137,10 +137,18 @@ describe("TrackList row state", () => {
     expect(onPlay.mock.calls).toEqual([[track("a")], [track("b")]]);
   });
 
+  it("names each X after its track, as play and pause are", () => {
+    setup(["a", "b"]);
+    expect(screen.getAllByRole("button", { name: /^Remove/ }).map((button) => button.getAttribute("aria-label"))).toEqual([
+      "Remove Track a",
+      "Remove Track b",
+    ]);
+  });
+
   it("removes from the X without playing the row", () => {
     const { onPlay, onDelete } = setup(["a", "b"]);
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Remove track" })[1]);
+    fireEvent.click(screen.getByRole("button", { name: "Remove Track b" }));
     expect(onDelete).toHaveBeenCalledExactlyOnceWith(track("b"));
     expect(onPlay).not.toHaveBeenCalled();
   });
