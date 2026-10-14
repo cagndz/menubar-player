@@ -5,10 +5,10 @@ import { EASE_OUT, useReducedMotion } from "../lib/motion";
 const PIXELS_PER_SECOND = 40;
 /** Before it starts: passing over a row on the way somewhere moves nothing. */
 const START_DELAY_MS = 500;
-/** Held at the end, and at the start again before each new pass. */
+/** Held at the start of every pass. */
 const HOLD_MS = 1000;
-/** Each half of the fade that takes it back to the start. */
-const FADE_MS = 150;
+/** Space between the title and the copy that follows it round. */
+const GAP_PX = 32;
 /** Going back to the start once the hover or the focus ends. */
 const RETURN_MS = 200;
 
@@ -19,27 +19,39 @@ interface MarqueeTextProps {
   className?: string;
 }
 
+/** The horizontal offset an element is drawn at right now, from its transform. */
+function translateX(element: Element): number {
+  const transform = getComputedStyle(element).transform;
+  return transform === "none" ? 0 : new DOMMatrixReadOnly(transform).m41;
+}
+
 /**
- * A title that ends in an ellipsis when it doesn't fit, and scrolls through
- * the rest while the pointer or the keyboard focus rests on what holds it
- * (the nearest `[data-marquee-host]`). Only if it doesn't fit, and never with
- * Reduce Motion, when the full title is the tooltip instead. Assistive
- * technology always reads it whole.
+ * A title that ends in an ellipsis when it doesn't fit, and scrolls round
+ * while the pointer or the keyboard focus rests on what holds it (the nearest
+ * `[data-marquee-host]`): only if it doesn't fit, and never with Reduce Motion.
+ *
+ * The scroll is one continuous loop with no visible restart. While it runs, a
+ * copy of the title follows it at a fixed gap; one pass moves everything by
+ * the title's width plus that gap, which leaves the copy exactly where the
+ * title started, so going back to the start is invisible. The copy is hidden
+ * from assistive technology and exists only while the title moves.
  */
 export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
   const boxRef = useRef<HTMLSpanElement>(null);
+  const trackRef = useRef<HTMLSpanElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
-  const [overflow, setOverflow] = useState(0);
+  const loopRef = useRef<Animation | null>(null);
+  const [size, setSize] = useState({ text: 0, box: 0 });
   const [engaged, setEngaged] = useState(false);
   const [running, setRunning] = useState(false);
   const reducedMotion = useReducedMotion();
 
-  // How far the text runs past the box; recomputed when either changes size.
+  // The title's own width and the box's, remeasured when either changes size.
   useEffect(() => {
     const box = boxRef.current;
     const inner = textRef.current;
     if (!box || !inner) return;
-    const measure = () => setOverflow(Math.max(0, Math.ceil(inner.scrollWidth - box.clientWidth)));
+    const measure = () => setSize({ text: Math.ceil(inner.scrollWidth), box: box.clientWidth });
     measure();
     if (typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(measure);
@@ -48,116 +60,107 @@ export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
     return () => observer.disconnect();
   }, [text]);
 
-  // Hover or focus on the host, and nothing while the popover is hidden.
+  // Hover or focus on the host; the popover hiding ends both at once.
   useEffect(() => {
     const host = boxRef.current?.closest<HTMLElement>("[data-marquee-host]");
     if (!host) return;
     const engage = () => setEngaged(true);
-    const release = () => setEngaged(host.matches(":hover") || host.contains(document.activeElement));
+    const release = () => setEngaged(host.contains(document.activeElement));
     const releaseOnFocusOut = (event: FocusEvent) => {
       if (!host.contains(event.relatedTarget as Node | null) && !host.matches(":hover")) setEngaged(false);
     };
-    const stop = () => setEngaged(false);
+    const hide = () => {
+      setEngaged(false);
+      for (const animation of trackRef.current?.getAnimations?.() ?? []) animation.cancel();
+      loopRef.current = null;
+      setRunning(false);
+    };
     host.addEventListener("pointerenter", engage);
     host.addEventListener("pointerleave", release);
     host.addEventListener("focusin", engage);
     host.addEventListener("focusout", releaseOnFocusOut);
-    window.addEventListener("blur", stop);
+    window.addEventListener("blur", hide);
     return () => {
       host.removeEventListener("pointerenter", engage);
       host.removeEventListener("pointerleave", release);
       host.removeEventListener("focusin", engage);
       host.removeEventListener("focusout", releaseOnFocusOut);
-      window.removeEventListener("blur", stop);
+      window.removeEventListener("blur", hide);
     };
   }, []);
 
-  const active = engaged && overflow > 0 && !reducedMotion;
+  const overflows = size.text > size.box;
+  const active = engaged && overflows && !reducedMotion;
+  const distance = size.text + GAP_PX;
+
+  // Engaged: half a second, then the copy comes in and the loop starts.
+  // Released: glide to the nearest start, then back to a single title.
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!active || !track) return;
+    const timer = window.setTimeout(() => setRunning(true), START_DELAY_MS);
+    return () => {
+      window.clearTimeout(timer);
+      const loop = loopRef.current;
+      if (!loop) return;
+      const from = translateX(track);
+      loop.cancel();
+      loopRef.current = null;
+      // Either start looks the same: 0, or one pass along, where the copy stands.
+      const to = Math.abs(from) < distance / 2 ? 0 : -distance;
+      const back = track.animate([{ transform: `translateX(${from}px)` }, { transform: `translateX(${to}px)` }], {
+        duration: RETURN_MS,
+        easing: easeOut,
+        fill: "forwards",
+      });
+      const done = () => {
+        back.cancel();
+        setRunning(false);
+      };
+      void back.finished.then(done, done);
+    };
+  }, [active, distance]);
 
   useEffect(() => {
-    const inner = textRef.current;
-    if (!active || !inner || typeof inner.animate !== "function") return;
+    const track = trackRef.current;
+    if (!running || !track || typeof track.animate !== "function" || loopRef.current) return;
+    const travel = (distance / PIXELS_PER_SECOND) * 1000;
+    // One pass: held at the start, then a constant glide one title and gap along.
+    loopRef.current = track.animate(
+      [
+        { transform: "translateX(0)", offset: 0 },
+        { transform: "translateX(0)", offset: HOLD_MS / (HOLD_MS + travel) },
+        { transform: `translateX(${-distance}px)`, offset: 1 },
+      ],
+      { duration: HOLD_MS + travel, easing: "linear", iterations: Infinity },
+    );
+  }, [running, distance]);
 
-    let cancelled = false;
-    let timer: number | undefined;
-    let current: Animation | null = null;
-    const wait = (ms: number) => new Promise<void>((resolve) => (timer = window.setTimeout(resolve, ms)));
-    // Each leg holds its last frame until the next one takes over from it.
-    const play = (keyframes: Keyframe[], options: KeyframeAnimationOptions) => {
-      const previous = current;
-      current = inner.animate(keyframes, { fill: "forwards", ...options });
-      previous?.cancel();
-      return current.finished.then(
-        () => undefined,
-        () => undefined,
-      );
-    };
-    const end = `translateX(${-overflow}px)`;
-
-    void (async () => {
-      await wait(START_DELAY_MS);
-      while (!cancelled) {
-        setRunning(true);
-        await play([{ transform: "translateX(0)" }, { transform: end }], {
-          duration: (overflow / PIXELS_PER_SECOND) * 1000,
-          easing: "linear",
-        });
-        if (cancelled) return;
-        await wait(HOLD_MS);
-        if (cancelled) return;
-        // Back to the start out of sight: fade out, jump, fade in.
-        await play(
-          [
-            { transform: end, opacity: 1 },
-            { transform: end, opacity: 0 },
-          ],
-          { duration: FADE_MS, easing: easeOut },
-        );
-        if (cancelled) return;
-        await play(
-          [
-            { transform: "translateX(0)", opacity: 0 },
-            { transform: "translateX(0)", opacity: 1 },
-          ],
-          {
-            duration: FADE_MS,
-            easing: easeOut,
-          },
-        );
-        if (cancelled) return;
-        await wait(HOLD_MS);
-      }
-    })();
-
+  // Nothing is left running once the title goes away.
+  useEffect(() => {
+    const track = trackRef.current;
     return () => {
-      cancelled = true;
-      window.clearTimeout(timer);
-      const from = current ? getComputedStyle(inner).transform : "none";
-      for (const animation of inner.getAnimations()) animation.cancel();
-      if (from === "none" || !document.hasFocus()) {
-        setRunning(false);
-        return;
-      }
-      // Hover or focus over: glide back to the start, then the ellipsis returns.
-      const back = inner.animate([{ transform: from }, { transform: "translateX(0)" }], { duration: RETURN_MS, easing: easeOut });
-      void back.finished.then(
-        () => setRunning(false),
-        () => setRunning(false),
-      );
+      for (const animation of track?.getAnimations?.() ?? []) animation.cancel();
     };
-  }, [active, overflow]);
+  }, []);
 
   return (
     <span
       ref={boxRef}
       className={`marquee ${className}`}
       data-running={running}
-      // The scroll shows the whole title, and a tooltip would cover the controls; with
-      // Reduce Motion it never scrolls, so then the tooltip is the way to read it whole.
-      title={reducedMotion && overflow > 0 ? text : undefined}
+      // With Reduce Motion it never scrolls, so the tooltip is the way to read it whole.
+      title={reducedMotion && overflows ? text : undefined}
     >
-      <span ref={textRef} className="marquee-text">
-        {text}
+      <span ref={trackRef} className="marquee-track">
+        <span ref={textRef} className="marquee-text">
+          {text}
+        </span>
+        {running && (
+          <span className="marquee-text" aria-hidden="true" style={{ marginLeft: GAP_PX }}>
+            {text}
+          </span>
+        )}
       </span>
     </span>
   );

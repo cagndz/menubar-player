@@ -584,13 +584,16 @@ input {
   }
 
   /* ---- titles that don't fit ----
-     An ellipsis at rest; while scrolling (MarqueeText), the text runs free
-     and both edges fade out. */
+     An ellipsis at rest. While one scrolls (MarqueeText), the title and a copy
+     of it sit side by side on a track that moves, and both edges fade out. */
 
   .marquee {
     display: block;
     min-width: 0;
     overflow: hidden;
+  }
+  .marquee-track {
+    display: block;
   }
   .marquee-text {
     display: block;
@@ -602,8 +605,12 @@ input {
     -webkit-mask-image: linear-gradient(to right, transparent, #000 10px, #000 calc(100% - 10px), transparent);
     mask-image: linear-gradient(to right, transparent, #000 10px, #000 calc(100% - 10px), transparent);
   }
-  .marquee[data-running="true"] .marquee-text {
+  .marquee[data-running="true"] .marquee-track {
+    display: flex;
     width: max-content;
+  }
+  .marquee[data-running="true"] .marquee-text {
+    flex: none;
     overflow: visible;
     text-overflow: clip;
   }

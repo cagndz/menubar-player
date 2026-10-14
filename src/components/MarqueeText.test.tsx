@@ -62,7 +62,7 @@ describe("MarqueeText", () => {
     expect(screen.getByTitle(LONG).textContent).toBe(LONG);
   });
 
-  it("waits half a second on hover before it moves, so passing over a row moves nothing", async () => {
+  it("waits half a second on hover, then loops round at a constant speed after a hold at the start", async () => {
     layout({ text: 600, box: 200 });
     const host = setup();
 
@@ -73,9 +73,45 @@ describe("MarqueeText", () => {
     await act(() => vi.advanceTimersByTimeAsync(100));
     expect(animate).toHaveBeenCalledOnce();
     const [keyframes, options] = animate.mock.calls[0];
-    // 400 px left over at 40 px a second, at constant speed.
-    expect(keyframes).toEqual([{ transform: "translateX(0)" }, { transform: "translateX(-400px)" }]);
-    expect(options).toMatchObject({ duration: 10_000, easing: "linear" });
+    // One pass is the title (600 px) plus the 32 px gap, at 40 px a second, after a 1 s hold.
+    expect(keyframes).toEqual([
+      { transform: "translateX(0)", offset: 0 },
+      { transform: "translateX(0)", offset: 1000 / 16_800 },
+      { transform: "translateX(-632px)", offset: 1 },
+    ]);
+    expect(options).toEqual({ duration: 16_800, easing: "linear", iterations: Infinity });
+  });
+
+  it("brings in a copy of the title only while it scrolls, hidden from assistive technology", async () => {
+    layout({ text: 600, box: 200 });
+    const host = setup();
+    expect(screen.getAllByText(LONG)).toHaveLength(1);
+
+    fireEvent.pointerEnter(host);
+    await act(() => vi.advanceTimersByTimeAsync(600));
+    const [title, copy] = screen.getAllByText(LONG);
+    expect(title.getAttribute("aria-hidden")).toBeNull();
+    expect(copy.getAttribute("aria-hidden")).toBe("true");
+  });
+
+  it("glides to the nearest start when released, then goes back to a single title", async () => {
+    layout({ text: 600, box: 200 });
+    const host = setup();
+    const finished: (() => void)[] = [];
+    animate.mockImplementation(() => ({
+      finished: new Promise<void>((resolve) => finished.push(resolve)),
+      cancel: vi.fn(),
+    }));
+
+    fireEvent.pointerEnter(host);
+    await act(() => vi.advanceTimersByTimeAsync(600));
+    fireEvent.pointerLeave(host);
+
+    const [keyframes, options] = animate.mock.calls[1];
+    expect(keyframes).toEqual([{ transform: "translateX(0px)" }, { transform: "translateX(0px)" }]);
+    expect(options).toMatchObject({ duration: 200 });
+    await act(async () => finished[1]());
+    expect(screen.getAllByText(LONG)).toHaveLength(1);
   });
 
   it("moves with the keyboard focus as it does with the pointer", async () => {
