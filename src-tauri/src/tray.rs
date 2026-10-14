@@ -23,11 +23,7 @@ const ICON_PLAYING: &[u8] = include_bytes!("../icons/tray-playing.png");
 const ICON_PAUSED: &[u8] = include_bytes!("../icons/tray-paused.png");
 
 // Logical points; scaled by the target monitor's scale factor before use.
-// The popover's top sits where Control Center's panel starts: 4 pt above the
-// bottom of the status item's rect (measured on 2026-10-14 on two displays,
-// 26 pt from the top of the screen in both). Relative to the icon, so it
-// follows the menu bar's height wherever that differs.
-const OFFSET_BELOW_ICON: f64 = -4.0;
+const GAP_BELOW_ICON: f64 = 6.0;
 const SCREEN_MARGIN: f64 = 8.0;
 
 // Clicking the tray icon while the popover is open blurs it first (hiding it)
@@ -385,7 +381,7 @@ fn popover_origin(icon: Bounds, screen: Bounds, popover_width: f64, scale: f64) 
 
     let centered = icon.x + icon.width / 2.0 - popover_width / 2.0;
     let x = centered.clamp(min_x, max_x);
-    let y = icon.y + icon.height + OFFSET_BELOW_ICON * scale;
+    let y = icon.y + icon.height + GAP_BELOW_ICON * scale;
 
     (x.round(), y.round())
 }
@@ -444,10 +440,10 @@ mod tests {
     }
 
     #[test]
-    fn centers_under_icon_with_scaled_offset() {
+    fn centers_under_icon_with_scaled_gap() {
         let (x, y) = popover_origin(icon_at(1000.0, 2.0), RETINA, 640.0, 2.0);
         assert_eq!(x, 1000.0 + 24.0 - 320.0);
-        assert_eq!(y, 48.0 - 8.0);
+        assert_eq!(y, 48.0 + 12.0);
     }
 
     #[test]
@@ -460,7 +456,7 @@ mod tests {
     fn stays_on_a_secondary_monitor_with_negative_origin() {
         let (x, y) = popover_origin(icon_at(-40.0, 1.0), EXTERNAL_LEFT, 320.0, 1.0);
         assert_eq!(x, -320.0 - 8.0);
-        assert_eq!(y, 24.0 - 4.0);
+        assert_eq!(y, 24.0 + 6.0);
 
         let (x, _) = popover_origin(icon_at(-1915.0, 1.0), EXTERNAL_LEFT, 320.0, 1.0);
         assert_eq!(x, -1920.0 + 8.0);
