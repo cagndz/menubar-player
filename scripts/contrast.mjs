@@ -46,7 +46,7 @@ const checks = [
   ["focus", "surface-2", UI, "focus ring on a pressed control"],
   ["text-muted", "surface-0", UI, "icon of the current track paused, bar while reconnecting"],
   ["text-muted", "surface-1", UI, "the same on a hovered row"],
-  ["track", "surface-0", UI, "unplayed part of the progress bar"],
+  ["track", "surface-0", UI, "unplayed part of the progress bar, and the bar with nothing loaded"],
   ["track", "surface-0", UI, "unfilled part of the volume slider"],
   ["text-muted", "surface-0", UI, "row icons, repeat off"],
   ["text-muted", "surface-1", UI, "repeat off under the pointer"],

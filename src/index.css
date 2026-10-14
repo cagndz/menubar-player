@@ -139,8 +139,32 @@ input {
     overflow: hidden;
     background: var(--color-surface-0);
     border-radius: var(--radius-window);
-    /* A faint inner edge defines the window; no drop shadow of our own. */
+  }
+  /* A faint inner edge defines the window; no drop shadow of our own. Drawn
+     over the content, so a line that runs edge to edge (the footer's) can't
+     break it. */
+  .popover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
     box-shadow: inset 0 0 0 1px var(--color-edge);
+    pointer-events: none;
+  }
+
+  /* The line over the player stops 1 px short of each side, so the window's
+     edge always meets the same background and runs unbroken. */
+  .player {
+    position: relative;
+  }
+  .player::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    inset-inline: 1px;
+    height: 1px;
+    background: var(--color-line);
   }
 
   .caps {
@@ -252,6 +276,8 @@ input {
   .button {
     height: 28px;
     padding-inline: 12px;
+    /* Transparent until disabled, so the size never changes. */
+    border: 1px solid transparent;
     border-radius: var(--radius-control);
     background: var(--color-surface-2);
     color: var(--color-text);
@@ -272,9 +298,12 @@ input {
     transform: scale(0.97);
   }
 
+  /* Disabled, Add looks like the field beside it, so the two read as a pair;
+     only its label, in the faint colour, says it can't be pressed yet. */
   .button:disabled {
     color: var(--color-text-faint);
     background: var(--color-surface-1);
+    border-color: var(--color-line);
   }
 
   .text-button {
@@ -653,8 +682,9 @@ input {
   .slider[data-disabled="true"] .slider-fill {
     display: none;
   }
+  /* Nothing to seek: the line stays, as visible as any other track. */
   .slider[data-disabled="true"] .slider-track {
-    background: var(--color-line);
+    background: var(--color-track);
   }
 
   /* Vertical: the same parts turned a quarter, filling from the bottom. */

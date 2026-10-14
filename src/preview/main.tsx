@@ -312,13 +312,15 @@ function Preview() {
   if (only === "states") return <StateSheet />;
   if (only === "morph") return <MorphDemo />;
 
-  // ?shot=playing, ?shot=volume or ?shot=error draws one popover alone on a clear page, for the README captures.
+  // ?shot=playing, ?shot=volume, ?shot=empty or ?shot=error draws one popover alone on a clear page, for the README captures.
   const shot = new URLSearchParams(window.location.search).get("shot");
   if (shot) {
     return (
       <div className="preview-shot">
         {shot === "volume" ? (
           <Frame name="Volume shown" volumeOpen />
+        ) : shot === "empty" ? (
+          <Frame name="Empty library" library={[]} currentId={null} status="idle" title={null} />
         ) : shot === "error" ? (
           <Frame name="Rate limited" status="error" currentId="t2" error={strings.errors.rateLimited} retry />
         ) : (
