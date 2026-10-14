@@ -274,6 +274,8 @@ function App() {
           </PlayerControls>
         }
         devTools={
+          // Development builds only: the condition lets the bundler drop all of it from release.
+          import.meta.env.DEV &&
           debug &&
           strings.debug && (
             <p className="notice flex gap-3">
