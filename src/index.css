@@ -22,6 +22,8 @@
 
   /* No accent colour: emphasis is the text colour itself, and the only hue is the error red. */
   --color-focus: #d0d6e0; /* keyboard focus ring */
+  --color-focus-soft: #6e727a; /* the URL field's border while it has the focus */
+  --color-focus-halo: rgb(208 214 224 / 0.12); /* and the faint ring around it */
   --color-edge: rgb(255 255 255 / 0.07); /* hairline that defines the window and what floats in it */
   --color-danger: #eb5757;
   --color-danger-surface: #2a1618;
@@ -72,6 +74,8 @@
     --color-text-faint: #666b73;
 
     --color-focus: #3f434b;
+    --color-focus-soft: #80858e;
+    --color-focus-halo: rgb(63 67 75 / 0.12);
     --color-edge: rgb(0 0 0 / 0.1);
     --color-danger: #c2291f;
     --color-danger-surface: #fbe9e7;
@@ -226,9 +230,18 @@ input {
   .field::placeholder {
     color: var(--color-text-faint);
   }
-  /* One line, not two: the ring is drawn over the field's own border. */
+  /* The field has the focus every time the popover opens, so its ring is
+     quieter than the others: the border itself lights up, with a faint halo
+     outside it. Still 3:1 against the field and the popover. */
+  .field {
+    transition:
+      border-color var(--duration-press) var(--ease-out),
+      box-shadow var(--duration-press) var(--ease-out);
+  }
   .field:is(:focus-visible, [data-force~="focus"]) {
-    outline-offset: -1px;
+    outline: none;
+    border-color: var(--color-focus-soft);
+    box-shadow: 0 0 0 3px var(--color-focus-halo);
   }
 
   .button {
