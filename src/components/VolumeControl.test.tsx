@@ -80,7 +80,7 @@ describe("VolumeControl", () => {
     expect(shown()).toBe(true);
 
     fireEvent.pointerLeave(area);
-    act(() => void vi.advanceTimersByTime(200));
+    act(() => void vi.advanceTimersByTime(100));
     expect(shown()).toBe(true);
     act(() => void vi.advanceTimersByTime(50));
     expect(shown()).toBe(false);

@@ -53,6 +53,8 @@
   --delay-busy: 150ms;
   /* What unfolds from a button: quick out of the gate, a long soft landing. */
   --ease-pop: cubic-bezier(0.2, 0, 0, 1);
+  /* The same thing going back: slow to start, quickest as it arrives. */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --duration-pop: 150ms;
 }
 
@@ -753,23 +755,22 @@ input {
     padding-left: 6px;
     visibility: hidden;
     opacity: 0;
-    transform: scaleX(0.6);
-    transform-origin: left center;
-    /* Leaves by fading only, starting gently; the scale is reset once it is
-       out of sight, ready for the next entrance. */
+    /* Uncovered from the button and covered back towards it, so the track's
+       rounded ends never deform. The 8 px outside the box leave room for the
+       thumb at the end of the line. */
+    clip-path: inset(-8px 100% -8px 0);
     transition:
-      opacity 180ms var(--ease-in-out),
-      transform 0s linear 180ms,
-      visibility 0s linear 180ms;
+      clip-path 120ms var(--ease-in),
+      opacity 120ms var(--ease-in),
+      visibility 0s linear 120ms;
   }
   .volume[data-open="true"] .volume-slider {
     visibility: visible;
     opacity: 1;
-    transform: none;
-    /* Unrolls from the button. */
+    clip-path: inset(-8px -8px -8px 0);
     transition:
+      clip-path var(--duration-pop) var(--ease-pop),
       opacity var(--duration-pop) var(--ease-pop),
-      transform var(--duration-pop) var(--ease-pop),
       visibility 0s;
   }
   /* The slider itself takes the pointer over the whole 32 px, and so does the
@@ -883,6 +884,6 @@ input {
   }
   .volume-slider,
   .volume[data-open="true"] .volume-slider {
-    transform: none;
+    clip-path: none;
   }
 }
