@@ -406,23 +406,38 @@ input {
     z-index: 2;
     display: grid;
     place-items: center;
-    /* A 24 px target around a 16 px glyph; it reaches into the row's padding
-       so the glyph, not the box, ends where the durations end. */
-    width: 24px;
-    height: 24px;
-    margin-right: -8px;
-    border-radius: 4px;
+    /* A 28 px target centred on the glyph. The glyph's ink is 8.5 px wide, so
+       the box reaches 9.75 px past the row's content edge for the ink to end
+       where the durations end. */
+    width: 28px;
+    height: 28px;
+    margin-right: -9.75px;
     color: var(--color-text-muted);
     opacity: 0;
+  }
+  /* The plate is drawn 2 px inside the target, so it stays within the row. */
+  .row-remove::before {
+    content: "";
+    position: absolute;
+    inset: 2px;
+    z-index: -1;
+    border-radius: 999px;
+    transition: background-color var(--duration-exit) var(--ease-out);
   }
   .row:is(:hover, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-remove {
     opacity: 1;
   }
+  /* Hidden, the duration lets the pointer through to the X under it. */
   .row:is(:hover, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-duration {
     opacity: 0;
+    pointer-events: none;
   }
-  .row-remove:is(:hover, [data-force~="hover"]) {
+  .row-remove:hover,
+  .row[data-force~="remove-hover"] .row-remove {
     color: var(--color-text);
+  }
+  .row-remove:hover::before,
+  .row[data-force~="remove-hover"] .row-remove::before {
     background: var(--color-surface-3);
   }
 

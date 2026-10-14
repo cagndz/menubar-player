@@ -154,10 +154,10 @@ function StateSheet() {
           onPlay={noop}
           onDelete={noop}
           onExitUp={noop}
-          force={{ t2: "hover", t3: "focus", t4: "active" }}
+          force={{ t2: "hover", t3: "focus", t4: "active", t6: "hover remove-hover" }}
         />
       </div>
-      <p className="preview-note">rest · hover · focus · pressed · current, playing · rest</p>
+      <p className="preview-note">rest · hover · focus · pressed · current, playing · pointer on the X</p>
       <div className="preview-window preview-window--auto">
         <TrackList tracks={LIBRARY.slice(0, 1)} currentId="t1" playing={false} onPlay={noop} onDelete={noop} onExitUp={noop} />
       </div>
