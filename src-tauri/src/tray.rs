@@ -9,7 +9,8 @@ use tauri::{
     AppHandle, Emitter, LogicalPosition, Manager, Monitor, Rect, WebviewWindow, Window, WindowEvent,
 };
 use tauri_nspanel::{
-    tauri_panel, CollectionBehavior, ManagerExt, PanelLevel, StyleMask, WebviewWindowExt,
+    objc2_app_kit::NSWindowAnimationBehavior, tauri_panel, CollectionBehavior, ManagerExt,
+    PanelLevel, StyleMask, WebviewWindowExt,
 };
 
 const POPOVER_LABEL: &str = "main";
@@ -134,6 +135,12 @@ pub fn make_panel(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     let panel = window.to_panel::<PopoverPanel<tauri::Wry>>()?;
 
     panel.add_style_mask(StyleMask::empty().nonactivating_panel().into())?;
+    // AppKit's default for this kind of window zooms it in with a small bounce
+    // every time it is shown. Opening the popover is the most repeated action
+    // in the app: it simply appears, as the system's menus do.
+    panel
+        .as_panel()
+        .setAnimationBehavior(NSWindowAnimationBehavior::None);
     // Just above the menu bar, as the system's own menus are.
     panel.set_level(PanelLevel::MainMenu.value() + 1);
     panel.set_collection_behavior(
