@@ -1,5 +1,5 @@
 import { useReducedMotion } from "motion/react";
-import { useEffect, useImperativeHandle, useRef, useState, type KeyboardEvent, type Ref } from "react";
+import { memo, useEffect, useImperativeHandle, useRef, useState, type KeyboardEvent, type Ref } from "react";
 import { formatTime } from "../lib/format";
 import { strings } from "../lib/strings";
 import { PlayIcon, PlayPauseIcon, RemoveIcon } from "./icons";
@@ -29,7 +29,12 @@ interface TrackListProps {
   force?: Record<string, string>;
 }
 
-export function TrackList(props: TrackListProps) {
+/**
+ * Memoised: the list re-renders only when its own props change (the tracks,
+ * which one is current and whether it plays), never because something else
+ * in the popover did. Its callbacks come in stable from the app.
+ */
+export const TrackList = memo(function TrackList(props: TrackListProps) {
   const { ref, tracks, currentId, playing, onPlay, onDelete, onExitUp, force } = props;
   // Roving tabindex: Tab reaches the list once, the arrow keys move inside it.
   const [activeIndex, setActiveIndex] = useState(0);
@@ -167,4 +172,4 @@ export function TrackList(props: TrackListProps) {
       })}
     </ul>
   );
-}
+});

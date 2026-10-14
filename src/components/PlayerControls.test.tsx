@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { tabStops } from "../lib/focus";
+import { createPositionStore } from "../lib/position";
 import { PlayerControls } from "./PlayerControls";
 
 function setup(overrides: Partial<Parameters<typeof PlayerControls>[0]> = {}) {
@@ -9,7 +10,7 @@ function setup(overrides: Partial<Parameters<typeof PlayerControls>[0]> = {}) {
   render(
     <PlayerControls
       status="playing"
-      currentTime={30}
+      position={createPositionStore(30)}
       duration={600}
       canPrevious
       canNext
@@ -73,9 +74,10 @@ describe("PlayerControls progress bar motion", () => {
   const bar = () => screen.getByRole("slider", { name: "Progress" }).parentElement as HTMLElement;
 
   function playingAt(time: number, overrides: Partial<Parameters<typeof PlayerControls>[0]> = {}) {
+    const position = createPositionStore(time);
     const props = {
       status: "playing" as const,
-      currentTime: time,
+      position,
       duration: 600,
       canPrevious: true,
       canNext: true,
@@ -88,7 +90,13 @@ describe("PlayerControls progress bar motion", () => {
       ...overrides,
     };
     const view = render(<PlayerControls {...props} />);
-    return { at: (next: number, more = {}) => view.rerender(<PlayerControls {...props} currentTime={next} {...more} />) };
+    // Other props change by re-rendering; the position, as in the app, by publishing it.
+    return {
+      at: (next: number, more = {}) => {
+        view.rerender(<PlayerControls {...props} {...more} />);
+        act(() => position.set(next));
+      },
+    };
   }
 
   it("glides while playback moves on a second at a time", () => {

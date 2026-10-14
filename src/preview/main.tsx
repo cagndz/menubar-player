@@ -13,6 +13,7 @@ import { UrlInput } from "../components/UrlInput";
 import { VolumeControl } from "../components/VolumeControl";
 import type { PlayerStatus } from "../hooks/usePlayer";
 import { formatTime } from "../lib/format";
+import { createPositionStore } from "../lib/position";
 import { strings } from "../lib/strings";
 import type { Track } from "../lib/tauri";
 import "../index.css";
@@ -97,7 +98,7 @@ function Frame(props: FrameProps) {
             <PlayerControls
               status={status}
               recovering={recovering}
-              currentTime={time}
+              position={createPositionStore(time)}
               duration={current && (status === "playing" || status === "paused") ? current.duration : 0}
               onToggle={noop}
               onSeek={noop}

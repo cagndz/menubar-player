@@ -46,6 +46,7 @@ function App() {
   const {
     audioRef,
     state,
+    position,
     load,
     playResolved,
     getTrackId,
@@ -259,7 +260,7 @@ function App() {
           <PlayerControls
             status={state.status}
             recovering={state.recovering}
-            currentTime={state.currentTime}
+            position={position}
             duration={state.duration}
             onToggle={toggle}
             onSeek={seek}

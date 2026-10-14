@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { toUserMessage } from "../lib/errors";
 import { clampSeek } from "../lib/mediaNavigation";
 import { createNavigationQueue, SUPERSEDED } from "../lib/navigationQueue";
+import { createPositionStore, type PositionSource } from "../lib/position";
 import { trackPosition } from "../lib/positionTracker";
 import { isRateLimited } from "../lib/rateLimit";
 import {
@@ -29,7 +30,6 @@ interface PlayerState {
   retryable: boolean;
   /** The stream is being re-resolved; the rest of the state is held still meanwhile. */
   recovering: boolean;
-  currentTime: number;
   duration: number;
 }
 
@@ -39,10 +39,9 @@ type Action =
   | { type: "playing" }
   | { type: "paused" }
   | { type: "failed"; error: string; retryable: boolean }
-  | { type: "time"; currentTime: number }
   | { type: "duration"; duration: number }
   | { type: "recovering"; position: number; resume: boolean }
-  | { type: "recovered"; playing: boolean; currentTime: number; duration: number };
+  | { type: "recovered"; playing: boolean; duration: number };
 
 /** What is known of a track before it is resolved: enough to show it at once. */
 interface TrackPreview {
@@ -105,7 +104,6 @@ const initialState: PlayerState = {
   error: null,
   retryable: false,
   recovering: false,
-  currentTime: 0,
   duration: 0,
 };
 
@@ -133,8 +131,6 @@ function reducer(state: PlayerState, action: Action): PlayerState {
       return !frozen && state.status === "playing" ? { ...state, status: "paused" } : state;
     case "failed":
       return { ...state, status: "error", error: action.error, retryable: action.retryable, recovering: false };
-    case "time":
-      return frozen ? state : { ...state, currentTime: action.currentTime };
     case "duration":
       return frozen ? state : { ...state, duration: action.duration };
     case "recovering":
@@ -145,14 +141,12 @@ function reducer(state: PlayerState, action: Action): PlayerState {
         error: null,
         retryable: false,
         recovering: true,
-        currentTime: action.position,
       };
     case "recovered":
       return {
         ...state,
         status: action.playing ? "playing" : "paused",
         recovering: false,
-        currentTime: action.currentTime,
         duration: action.duration,
       };
   }
@@ -255,6 +249,8 @@ export function usePlayer(options: PlayerOptions) {
   stallRef.current ??= createStallDetector();
 
   const [state, dispatch] = useReducer(reducer, initialState);
+  // The position is published apart from the state, so a tick re-renders only what shows it.
+  const [positionStore] = useState(createPositionStore);
 
   const clearLoadingTimeout = useCallback(() => {
     window.clearTimeout(timeoutRef.current);
@@ -305,6 +301,8 @@ export function usePlayer(options: PlayerOptions) {
       clearLoadingTimeout();
       debugLog(`[recovery] start reason="${reason}" position=${position.toFixed(1)} resume=${resume}`);
       dispatch({ type: "recovering", position, resume });
+      // Show what the recovery is heading back to.
+      positionStore.set(position);
       // Whatever stream was remembered for this track is the one that just failed.
       forgetStream(trackId);
       void optionsRef.current.onPosition(trackId, position);
@@ -342,12 +340,8 @@ export function usePlayer(options: PlayerOptions) {
           recoveringRef.current = false;
           lastGoodTimeRef.current = audio.currentTime;
           debugLog(`[recovery] done attempt=${attempt} t=${audio.currentTime.toFixed(1)} paused=${audio.paused}`);
-          dispatch({
-            type: "recovered",
-            playing: resume,
-            currentTime: audio.currentTime,
-            duration: audio.duration,
-          });
+          dispatch({ type: "recovered", playing: resume, duration: audio.duration });
+          positionStore.set(audio.currentTime);
           return;
         } catch (err) {
           if (superseded()) return;
@@ -423,7 +417,8 @@ export function usePlayer(options: PlayerOptions) {
       const second = Math.floor(audio.currentTime);
       if (!force && second === shownSecondRef.current) return;
       shownSecondRef.current = second;
-      dispatch({ type: "time", currentTime: audio.currentTime });
+      // While recovering, the element is torn down and rebuilt; its times don't reach the UI.
+      if (!recoveringRef.current) positionStore.set(audio.currentTime);
     };
     // Reopening the popover shows the current time at once.
     const onVisibility = () => publishTime(true);
@@ -557,6 +552,7 @@ export function usePlayer(options: PlayerOptions) {
       audio.removeAttribute("src");
       audio.load();
       dispatch({ type: "load", quiet: mode.quiet, track });
+      positionStore.set(0);
       armLoadingTimeout(strings.errors.resolveTimeout);
 
       const isCurrent = () => request === requestRef.current;
@@ -564,7 +560,9 @@ export function usePlayer(options: PlayerOptions) {
         const obtained = await obtain({
           isCurrent,
           showLoading: () => {
-            if (isCurrent()) dispatch({ type: "load", quiet: false, track });
+            if (!isCurrent()) return;
+            dispatch({ type: "load", quiet: false, track });
+            positionStore.set(0);
           },
         });
         if (request !== requestRef.current) return;
@@ -707,7 +705,7 @@ export function usePlayer(options: PlayerOptions) {
       const target = clampSeek(time, audio.duration);
       audio.currentTime = target;
       lastGoodTimeRef.current = target;
-      dispatch({ type: "time", currentTime: target });
+      positionStore.set(target);
       void savePosition();
     },
     [savePosition],
@@ -748,6 +746,8 @@ export function usePlayer(options: PlayerOptions) {
   return {
     audioRef,
     state,
+    /** The playback position, to subscribe to with `usePosition`. */
+    position: positionStore as PositionSource,
     load,
     playResolved,
     getTrackId,

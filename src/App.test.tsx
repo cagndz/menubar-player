@@ -39,6 +39,38 @@ vi.mock("./lib/tauri", () => ({
   debugLog: () => {},
 }));
 
+// Render counters: each wraps the real component and counts its renders,
+// to pin down what a tick or a volume change re-renders.
+const renders = vi.hoisted(() => ({ popover: 0, levelBars: 0, progressSlider: 0, volumeSlider: 0 }));
+vi.mock("./components/PopoverView", async (load) => {
+  const actual = await load<typeof import("./components/PopoverView")>();
+  return {
+    PopoverView: (props: Parameters<typeof actual.PopoverView>[0]) => {
+      renders.popover++;
+      return actual.PopoverView(props);
+    },
+  };
+});
+vi.mock("./components/LevelBars", async (load) => {
+  const actual = await load<typeof import("./components/LevelBars")>();
+  return {
+    LevelBars: (props: Parameters<typeof actual.LevelBars>[0]) => {
+      renders.levelBars++;
+      return actual.LevelBars(props);
+    },
+  };
+});
+vi.mock("./components/Slider", async (load) => {
+  const actual = await load<typeof import("./components/Slider")>();
+  return {
+    Slider: (props: Parameters<typeof actual.Slider>[0]) => {
+      if (props.inputProps["aria-label"] === "Progress") renders.progressSlider++;
+      else renders.volumeSlider++;
+      return actual.Slider(props);
+    },
+  };
+});
+
 // jsdom lays nothing out, so the library's scrollbar has nothing to observe.
 globalThis.ResizeObserver ??= class {
   observe() {}
@@ -468,6 +500,28 @@ describe("rendering while playing", () => {
   }
 
   const shownTime = () => document.querySelector('[data-slot="current-time"]')!.textContent;
+
+  it("re-renders only the progress row on a tick: not the popover, the library or the volume", async () => {
+    const { tick } = await playCounting();
+    for (const key of Object.keys(renders) as (keyof typeof renders)[]) renders[key] = 0;
+
+    await tick(10.1);
+    await tick(11.1);
+    await tick(12.1);
+
+    expect(shownTime()).toBe("0:12");
+    expect(renders).toEqual({ popover: 0, levelBars: 0, progressSlider: 3, volumeSlider: 0 });
+  });
+
+  it("leaves the library alone when something else in the popover changes", async () => {
+    await playCounting();
+    for (const key of Object.keys(renders) as (keyof typeof renders)[]) renders[key] = 0;
+
+    fireEvent.change(screen.getByRole("slider", { name: /^Volume/ }), { target: { value: "40" } });
+
+    expect(renders.popover).toBeGreaterThan(0);
+    expect(renders.levelBars).toBe(0);
+  });
 
   it("updates the time at most once per displayed second while the popover is visible", async () => {
     const { tick } = await playCounting();
