@@ -13,12 +13,13 @@ export function LevelBars({ playing }: { playing: boolean }) {
       className="level-bars"
       data-playing={playing}
     >
-      {/* design/icons/tray-playing.svg, with the 1 px margin of its 18 px box cropped off. */}
-      <svg width="16" height="16" viewBox="1 1 16 16" fill="currentColor" aria-hidden="true">
-        <rect x="3.5" y="8" width="2.5" height="7" rx="1.25" />
-        <rect x="7.75" y="3" width="2.5" height="12" rx="1.25" />
-        <rect x="12" y="6" width="2.5" height="9" rx="1.25" />
-      </svg>
+      {/* design/icons/tray-playing.svg, drawn as boxes rather than SVG so the
+          compositor can animate them without repainting (see index.css). */}
+      <span className="level-bars-glyph" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </span>
     </span>
   );
 }

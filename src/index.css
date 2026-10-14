@@ -291,23 +291,42 @@ input {
      also leaves them at different heights; resuming carries on from there.
      The delays pick the frame shown before anything has played: middle, high,
      low, never a rising staircase (that reads as signal strength). */
-  .level-bars rect {
-    transform-box: fill-box;
+  /* The tray icon's bars in a 16 px box (its 18 px box less a 1 px margin):
+     2.5 px wide, feet on one line, 7, 12 and 9 px tall. */
+  .level-bars-glyph {
+    position: relative;
+    width: 16px;
+    height: 16px;
+  }
+  .level-bars-glyph > i {
+    position: absolute;
+    bottom: 2px;
+    width: 2.5px;
+    border-radius: 1.25px;
+    background: currentColor;
     transform-origin: 50% 100%;
     animation: level-a 1.13s cubic-bezier(0.45, 0, 0.55, 1) -0.73s infinite;
   }
-  .level-bars rect:nth-child(2) {
+  .level-bars-glyph > i:nth-child(1) {
+    left: 2.5px;
+    height: 7px;
+  }
+  .level-bars-glyph > i:nth-child(2) {
+    left: 6.75px;
+    height: 12px;
     animation-name: level-b;
     animation-duration: 0.87s;
     animation-delay: -0.35s;
   }
-  .level-bars rect:nth-child(3) {
+  .level-bars-glyph > i:nth-child(3) {
+    left: 11px;
+    height: 9px;
     animation-name: level-c;
     animation-duration: 1.37s;
     animation-delay: -0.41s;
   }
-  .level-bars[data-playing="false"] rect,
-  :root[data-window="hidden"] .level-bars rect {
+  .level-bars[data-playing="false"] i,
+  :root[data-window="hidden"] .level-bars i {
     animation-play-state: paused;
   }
 
@@ -652,7 +671,9 @@ input {
   }
 }
 
-/* Scale only, never height: nothing is laid out again on each frame.
+/* Scale only, never height: on HTML boxes WebKit hands a transform to the
+   compositor, so a playing row costs next to nothing. (As SVG rects, the same
+   loop repainted every frame: about 10 % CPU with the popover open.)
    Never below 0.4, where the rounded ends would start to look squashed. */
 @keyframes level-a {
   0%,
@@ -713,7 +734,7 @@ input {
     animation: none;
   }
   /* The bars keep the menu bar icon's shape, still. */
-  .level-bars rect {
+  .level-bars i {
     animation: none;
   }
   .slider-tip,
