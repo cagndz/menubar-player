@@ -32,6 +32,7 @@ export const strings = {
       one: "Repeat: one",
     },
     unknownTime: "--:--",
+    nothingPlaying: "Nothing playing",
   },
   volume: {
     percent: (volume: number) => `${volume}%`,

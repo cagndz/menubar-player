@@ -90,9 +90,16 @@ export function PopoverView(props: PopoverViewProps) {
         )}
         {/* The title sits centred over the player. */}
         <div className="flex min-h-[18px] flex-col items-center text-center">
-          <p data-slot="track-title" className="max-w-full truncate font-medium">
-            {title}
-          </p>
+          {title ? (
+            <p data-slot="track-title" className="max-w-full truncate font-medium">
+              {title}
+            </p>
+          ) : (
+            // Holds the title's place, so the popover keeps its layout with nothing loaded.
+            <p data-slot="track-title" className="text-text-muted">
+              {strings.controls.nothingPlaying}
+            </p>
+          )}
           <p role="status" className="sr-only">
             {statusLabel}
           </p>
