@@ -20,8 +20,8 @@ https://github.com/user-attachments/assets/7eae8b50-8037-4816-91d2-a9311b0a73d5
 - **A menu on right click**: play or pause, skip to the next track, launch at login and quit.
 - **Recovers by itself.** Stream links expire after a few hours; the app notices, asks for a new one and carries
   on from the same second.
-- **Keyboard first.** Tab follows the visual order, the arrow keys move through the library, Enter plays, Space
-  toggles playback and the arrows seek by 1 s (10 s with Shift) on the progress bar.
+- **Keyboard first.** Tab follows the visual order, the arrow keys move through the library, Enter plays, Delete
+  removes, Space toggles playback, M mutes and the arrows seek by 1 s (10 s with Shift) on the progress bar.
 - **Dark and light**, following the system, and it respects Reduce Motion.
 
 <img src="assets/screenshot-volume-light.png" width="840" alt="The popover in light mode, with the volume slider open">
