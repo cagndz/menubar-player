@@ -83,7 +83,7 @@ export function NextIcon() {
 export function RemoveIcon() {
   return (
     <svg {...box} {...line}>
-      <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" />
+      <path d="M5 5l6 6M11 5l-6 6" />
     </svg>
   );
 }

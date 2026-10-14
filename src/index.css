@@ -452,24 +452,29 @@ input {
     z-index: 2;
     display: grid;
     place-items: center;
-    /* A 28 px target centred on the glyph. The glyph's ink is 8.5 px wide, so
-       the box reaches 9.75 px past the row's content edge for the ink to end
+    /* A 28 px target centred on the glyph. The glyph's ink is 7.5 px wide, so
+       the box reaches 10.25 px past the row's content edge for the ink to end
        where the durations end. */
     width: 28px;
     height: 28px;
-    margin-right: -9.75px;
+    margin-right: -10.25px;
     color: var(--color-text-muted);
     opacity: 0;
+    /* Its own fade as the row's end swaps, and the press every button has. */
+    transition:
+      opacity var(--duration-exit) var(--ease-out),
+      transform var(--duration-press) var(--ease-press);
   }
-  /* The plate is 18 px, drawn 5 px inside the target: it stays within the row
-     and ends 7 px from the window's edge, clear of the scrollbar's lane. */
+  /* The plate is the player buttons' rounded square at 18 px (their 6 px
+     radius, scaled), with the glyph taking the same share of it as theirs. It
+     stays within the row and ends 7 px from the window's edge, clear of the
+     scrollbar's lane. */
   .row-remove::before {
     content: "";
     position: absolute;
     inset: 5px;
     z-index: -1;
-    border-radius: 999px;
-    transition: background-color var(--duration-exit) var(--ease-out);
+    border-radius: 4px;
   }
   .row:is(:hover, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-remove {
     opacity: 1;
@@ -483,9 +488,18 @@ input {
   .row[data-force~="remove-hover"] .row-remove {
     color: var(--color-text);
   }
+  /* The same states as the other buttons, one step up from what is behind:
+     they sit on the popover and light to surface-1; the X sits on a row that
+     is already surface-1, so it lights to surface-2, and pressed, one more. */
   .row-remove:hover::before,
   .row[data-force~="remove-hover"] .row-remove::before {
+    background: var(--color-surface-2);
+  }
+  .row-remove:is(:active, [data-force~="active"])::before {
     background: var(--color-surface-3);
+  }
+  .row-remove:is(:active, [data-force~="active"]) {
+    transform: scale(0.97);
   }
 
   /* ---- player buttons ---- */
@@ -910,8 +924,12 @@ input {
   :is(.button, .icon-button):not(:disabled) {
     transition: none;
   }
-  :is(.button, .icon-button):is(:active, [data-force~="active"]):not(:disabled) {
+  :is(.button, .icon-button):is(:active, [data-force~="active"]):not(:disabled),
+  .row-remove:is(:active, [data-force~="active"]) {
     transform: none;
+  }
+  .row-remove {
+    transition: opacity var(--duration-exit) var(--ease-out);
   }
   .slider[data-smooth="true"] :is(.slider-fill, .slider-rail) {
     transition: none;
