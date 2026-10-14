@@ -106,7 +106,9 @@ export function ScrollArea({ children }: { children: ReactNode }) {
         onPointerMove={onThumbMove}
         onPointerUp={onThumbUp}
         onPointerCancel={onThumbUp}
-      />
+      >
+        <span className="scroll-thumb-bar" />
+      </div>
     </div>
   );
 }
