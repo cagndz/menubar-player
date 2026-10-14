@@ -12,94 +12,48 @@ function setup(volume: number, muted = false) {
       <button type="button">Elsewhere</button>
     </>,
   );
+  const root = container.firstChild as HTMLElement;
   return {
     ...handlers,
     slider: screen.getByRole("slider", { hidden: true }) as HTMLInputElement,
-    button: screen.getByRole("button", { name: /^Volume/ }),
-    mute: screen.getByRole("button", { name: "Mute", hidden: true }),
-    panel: () => container.querySelector(".volume-flyout") as HTMLElement,
-    level: () => (container.firstChild as HTMLElement).dataset.level,
+    button: screen.getByRole("button", { name: "Mute" }),
+    shown: () => root.dataset.open === "true",
+    level: () => root.dataset.level,
   };
 }
 
-afterEach(cleanup);
+const names = () => tabStops(document.body).map((element) => element.getAttribute("aria-label") ?? element.textContent);
+
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe("VolumeControl", () => {
-  it("names the level in percent on the slider and on the button", () => {
-    const { slider, button, mute } = setup(80);
+  it("mutes from the button, which says whether it is pressed", () => {
+    const { button, onToggleMute } = setup(80);
 
-    expect(slider.getAttribute("aria-label")).toBe("Volume: 80%");
-    expect(slider.getAttribute("aria-valuetext")).toBe("80%");
-    expect(button.getAttribute("aria-label")).toBe("Volume: 80%");
-    expect(mute.getAttribute("aria-pressed")).toBe("false");
+    expect(button.getAttribute("aria-pressed")).toBe("false");
+    fireEvent.click(button);
+    expect(onToggleMute).toHaveBeenCalledOnce();
   });
 
-  it("shows a muted slider at 0 while the button remembers the level", () => {
-    const { slider, button, mute } = setup(80, true);
+  it("shows a muted slider at 0 while the level is kept", () => {
+    const { slider, button } = setup(80, true);
 
     expect(slider.value).toBe("0");
     expect(slider.getAttribute("aria-label")).toBe("Volume: 0%");
-    expect(button.getAttribute("aria-label")).toBe("Volume: muted (80%)");
-    expect(mute.getAttribute("aria-pressed")).toBe("true");
+    expect(button.getAttribute("aria-pressed")).toBe("true");
   });
 
-  it("opens on click, and keeps the closed panel out of the tab order", () => {
-    const { button, panel } = setup(80);
+  it("names the level in percent on the slider", () => {
+    const { slider } = setup(80);
 
-    expect(button.getAttribute("aria-expanded")).toBe("false");
-    expect(panel().hasAttribute("inert")).toBe(true);
-    expect(tabStops(document.body).map((element) => element.getAttribute("aria-label") ?? element.textContent)).toEqual([
-      "Volume: 80%",
-      "Elsewhere",
-    ]);
-
-    fireEvent.click(button);
-    expect(button.getAttribute("aria-expanded")).toBe("true");
-    expect(panel().hasAttribute("inert")).toBe(false);
-    expect(tabStops(document.body).map((element) => element.getAttribute("aria-label") ?? element.textContent)).toEqual([
-      "Volume: 80%",
-      "Volume: 80%",
-      "Mute",
-      "Elsewhere",
-    ]);
-
-    fireEvent.click(button);
-    expect(button.getAttribute("aria-expanded")).toBe("false");
+    expect(slider.getAttribute("aria-label")).toBe("Volume: 80%");
+    expect(slider.getAttribute("aria-valuetext")).toBe("80%");
   });
 
-  it("closes on Escape and gives the focus back to the button", () => {
-    const { button, slider } = setup(80);
-
-    fireEvent.click(button);
-    slider.focus();
-    fireEvent.keyDown(slider, { key: "Escape" });
-
-    expect(button.getAttribute("aria-expanded")).toBe("false");
-    expect(document.activeElement).toBe(button);
-  });
-
-  it("closes on a click outside, but not on one inside", () => {
-    const { button, slider } = setup(80);
-
-    fireEvent.click(button);
-    fireEvent.pointerDown(slider);
-    expect(button.getAttribute("aria-expanded")).toBe("true");
-
-    fireEvent.pointerDown(document.body);
-    expect(button.getAttribute("aria-expanded")).toBe("false");
-  });
-
-  it("closes when the focus leaves it", () => {
-    const { button, mute } = setup(80);
-
-    fireEvent.click(button);
-    act(() => mute.focus());
-    act(() => screen.getByRole("button", { name: "Elsewhere" }).focus());
-
-    expect(button.getAttribute("aria-expanded")).toBe("false");
-  });
-
-  it("uses a different icon for muted, low and high", () => {
+  it("uses the crossed speaker for muted and for 0, and waves for low and high", () => {
     expect(setup(80, true).level()).toBe("muted");
     cleanup();
     expect(setup(0).level()).toBe("muted");
@@ -107,6 +61,54 @@ describe("VolumeControl", () => {
     expect(setup(30).level()).toBe("low");
     cleanup();
     expect(setup(80).level()).toBe("high");
+  });
+
+  it("shows the slider with the pointer on the button or the slider, and hides it a moment after it leaves", () => {
+    vi.useFakeTimers();
+    const { button, slider, shown } = setup(80);
+    const area = slider.closest(".volume-slider")!;
+
+    expect(shown()).toBe(false);
+    fireEvent.pointerEnter(button);
+    expect(shown()).toBe(true);
+
+    // Crossing from the button to the slider keeps it.
+    fireEvent.pointerLeave(button);
+    act(() => void vi.advanceTimersByTime(100));
+    fireEvent.pointerEnter(area);
+    act(() => void vi.advanceTimersByTime(500));
+    expect(shown()).toBe(true);
+
+    fireEvent.pointerLeave(area);
+    act(() => void vi.advanceTimersByTime(100));
+    expect(shown()).toBe(true);
+    act(() => void vi.advanceTimersByTime(100));
+    expect(shown()).toBe(false);
+  });
+
+  it("keeps the hidden slider out of the tab order, and brings it in when the button has the focus", () => {
+    const { button, shown } = setup(80);
+
+    expect(names()).toEqual(["Mute", "Elsewhere"]);
+    act(() => button.focus());
+    expect(shown()).toBe(true);
+    expect(names()).toEqual(["Mute", "Volume: 80%", "Elsewhere"]);
+  });
+
+  it("hides when the focus leaves, and on Escape gives the focus back to the button", () => {
+    const { button, slider, shown } = setup(80);
+
+    act(() => button.focus());
+    act(() => slider.focus());
+    fireEvent.keyDown(slider, { key: "Escape" });
+    expect(shown()).toBe(false);
+    expect(document.activeElement).toBe(button);
+
+    act(() => slider.focus());
+    act(() => screen.getByRole("button", { name: "Elsewhere" }).focus());
+    expect(shown()).toBe(false);
+    act(() => button.focus());
+    expect(shown()).toBe(true);
   });
 
   it("moves 5 at a time with the arrow keys", () => {
@@ -126,11 +128,6 @@ describe("VolumeControl", () => {
     expect(top.onVolumeChange).toHaveBeenLastCalledWith(100);
     cleanup();
 
-    const full = setup(100);
-    fireEvent.keyDown(full.slider, { key: "ArrowRight" });
-    expect(full.onVolumeChange).toHaveBeenLastCalledWith(100);
-    cleanup();
-
     const bottom = setup(3);
     fireEvent.keyDown(bottom.slider, { key: "ArrowLeft" });
     expect(bottom.onVolumeChange).toHaveBeenLastCalledWith(0);
@@ -143,13 +140,10 @@ describe("VolumeControl", () => {
     expect(onVolumeChange).toHaveBeenLastCalledWith(5);
   });
 
-  it("reports dragging and the mute toggle", () => {
-    const { slider, mute, onVolumeChange, onToggleMute } = setup(50);
+  it("reports dragging", () => {
+    const { slider, onVolumeChange } = setup(50);
 
     fireEvent.change(slider, { target: { value: "72" } });
-    fireEvent.click(mute);
-
     expect(onVolumeChange).toHaveBeenLastCalledWith(72);
-    expect(onToggleMute).toHaveBeenCalledOnce();
   });
 });

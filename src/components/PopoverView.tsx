@@ -74,7 +74,7 @@ export function PopoverView(props: PopoverViewProps) {
         )}
       </AnimatePresence>
 
-      <footer className="player flex flex-col gap-1.5 border-t border-line px-3 pt-2 pb-3">
+      <footer className="flex flex-col gap-1.5 border-t border-line px-3 pt-2 pb-3">
         {error && (
           <p role="alert" className="error-block">
             {error}

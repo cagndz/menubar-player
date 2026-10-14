@@ -1,8 +1,11 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { strings } from "../lib/strings";
 import { clampVolume, MAX_VOLUME, MIN_VOLUME, stepVolume, VOLUME_STEP, volumeLevel } from "../lib/volume";
 import { VolumeHighIcon, VolumeLowIcon, VolumeMutedIcon } from "./icons";
 import { Slider } from "./Slider";
+
+/** Grace before the slider hides once the pointer leaves, so crossing a seam doesn't make it blink. */
+const HIDE_DELAY_MS = 150;
 
 interface VolumeControlProps {
   /** 0 to 100; kept while muted. */
@@ -10,102 +13,102 @@ interface VolumeControlProps {
   muted: boolean;
   onVolumeChange: (volume: number) => void;
   onToggleMute: () => void;
-  /** Preview only: "open" draws the panel open. */
+  /** Preview only: "open" draws the slider shown. */
   force?: string;
 }
 
 const LEVEL_ICON = { muted: VolumeMutedIcon, low: VolumeLowIcon, high: VolumeHighIcon };
 
 /**
- * The button opens a small panel above the player with a vertical slider and
- * a mute toggle. A click outside, Escape or the focus leaving closes it; the
- * button's icon shows the level, muted included, while it is closed.
+ * The button mutes. A horizontal slider shows to its right while the pointer
+ * is on either of them or the keyboard focus is inside; it takes no room of
+ * its own, filling the space the player leaves after the button.
+ *
+ * The root is `display: contents`: the button and the slider are laid out by
+ * the player's grid, the slider in the column that runs to the edge.
  */
 export function VolumeControl({ volume, muted, onVolumeChange, onToggleMute, force }: VolumeControlProps) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  // Escape hides the slider while the focus stays on the button; leaving undoes it.
+  const [dismissed, setDismissed] = useState(false);
+  const hideTimerRef = useRef<number | undefined>(undefined);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const panelId = useId();
-  const shownOpen = open || force === "open";
+  const shown = force === "open" || (!dismissed && (hovered || focused));
 
   const level = volumeLevel({ volume, muted });
   const LevelIcon = LEVEL_ICON[level];
   // What can be heard right now: a muted slider sits at 0 but remembers its level.
-  const shown = muted ? MIN_VOLUME : volume;
+  const audible = muted ? MIN_VOLUME : volume;
 
-  useEffect(() => {
-    if (!open) return;
-    const close = () => setOpen(false);
-    const onPointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) close();
-    };
-    // Escape closes the panel and nothing else; the focus goes back to the button.
-    const onKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      event.preventDefault();
-      close();
-      buttonRef.current?.focus();
-    };
-    document.addEventListener("pointerdown", onPointerDown, true);
-    document.addEventListener("keydown", onKeyDown);
-    // Hiding the popover is a way of leaving too.
-    window.addEventListener("blur", close);
-    return () => {
-      document.removeEventListener("pointerdown", onPointerDown, true);
-      document.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("blur", close);
-    };
-  }, [open]);
+  useEffect(() => () => window.clearTimeout(hideTimerRef.current), []);
+
+  const pointerIn = () => {
+    window.clearTimeout(hideTimerRef.current);
+    setHovered(true);
+  };
+  const pointerOut = () => {
+    window.clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = window.setTimeout(() => {
+      setHovered(false);
+      setDismissed(false);
+    }, HIDE_DELAY_MS);
+  };
 
   // Arrows move in steps of 5; dragging keeps the slider's own resolution.
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+  const handleSliderKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     const direction =
       event.key === "ArrowRight" || event.key === "ArrowUp" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowDown" ? -1 : 0;
     if (direction === 0) return;
     event.preventDefault();
-    onVolumeChange(stepVolume(shown, direction * VOLUME_STEP));
+    onVolumeChange(stepVolume(audible, direction * VOLUME_STEP));
   };
 
   return (
     <div
-      ref={rootRef}
+      className="volume"
       data-level={level}
-      data-open={shownOpen}
-      className="volume ml-3"
+      data-open={shown}
+      onFocus={() => setFocused(true)}
       onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setOpen(false);
+        if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+        setFocused(false);
+        setDismissed(false);
+      }}
+      onKeyDown={(event) => {
+        if (event.key !== "Escape" || !shown) return;
+        setDismissed(true);
+        buttonRef.current?.focus();
       }}
     >
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setOpen((current) => !current)}
-        aria-label={strings.volume.button(volume, muted)}
-        aria-expanded={shownOpen}
-        aria-controls={panelId}
-        className="icon-button"
+        onClick={onToggleMute}
+        onPointerEnter={pointerIn}
+        onPointerLeave={pointerOut}
+        aria-label={strings.volume.mute}
+        aria-pressed={muted}
+        className="icon-button ml-3"
       >
         <LevelIcon />
       </button>
-      <div id={panelId} className="volume-flyout" inert={!shownOpen}>
+      {/* Starts right at the button's edge, so the pointer never crosses a gap. */}
+      <div className="volume-slider" inert={!shown} onPointerEnter={pointerIn} onPointerLeave={pointerOut}>
         <Slider
-          value={shown}
+          value={audible}
           max={MAX_VOLUME}
-          orientation="vertical"
           live
           onCommit={(value) => onVolumeChange(clampVolume(value))}
           inputProps={{
             step: 1,
-            value: shown,
-            "aria-label": strings.volume.slider(shown),
-            "aria-valuetext": strings.volume.percent(shown),
+            value: audible,
+            "aria-label": strings.volume.slider(audible),
+            "aria-valuetext": strings.volume.percent(audible),
             onChange: (event) => onVolumeChange(Number(event.target.value)),
-            onKeyDown: handleKeyDown,
+            onKeyDown: handleSliderKeyDown,
           }}
         />
-        <button type="button" onClick={onToggleMute} aria-label={strings.volume.mute} aria-pressed={muted} className="icon-button">
-          <VolumeMutedIcon />
-        </button>
       </div>
     </div>
   );

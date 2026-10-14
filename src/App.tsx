@@ -153,8 +153,8 @@ function App() {
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        // An open panel inside the popover closes first, on its own.
-        if (!document.querySelector('[aria-expanded="true"]')) void hidePopover();
+        // The volume slider, when the keyboard brought it out, goes first, on its own.
+        if (!document.activeElement?.closest('.volume[data-open="true"]')) void hidePopover();
       } else if (event.key === "Tab") {
         if (wrapTab(document.body, event.shiftKey)) event.preventDefault();
       } else if (event.key === " " && !isTextField(event.target)) {

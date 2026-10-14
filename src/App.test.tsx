@@ -847,7 +847,7 @@ describe("volume", () => {
       "Previous track",
       "Pause",
       "Next track",
-      "Volume: 100%",
+      "Mute",
     ]);
   });
 
@@ -858,10 +858,9 @@ describe("volume", () => {
     fireEvent.change(slider, { target: { value: "40" } });
     expect(audio.volume).toBeCloseTo(0.4);
 
-    fireEvent.click(screen.getByRole("button", { name: "Volume: 40%" }));
     fireEvent.click(screen.getByRole("button", { name: "Mute" }));
     expect(audio.volume).toBe(0);
-    expect(screen.getByRole("button", { name: "Volume: muted (40%)" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Mute" }).getAttribute("aria-pressed")).toBe("true");
 
     fireEvent.click(screen.getByRole("button", { name: "Mute" }));
     expect(audio.volume).toBeCloseTo(0.4);
@@ -880,14 +879,14 @@ describe("volume", () => {
     expect(audio.volume).toBe(1);
   });
 
-  it("closes the volume panel on Escape, and only the next Escape hides the popover", async () => {
+  it("hides the volume slider on Escape, and only the next Escape hides the popover", async () => {
     await playing();
     backend.hidePopover.mockClear();
-    const button = screen.getByRole("button", { name: /^Volume/ });
+    const button = screen.getByRole("button", { name: "Mute" });
 
-    fireEvent.click(button);
+    act(() => button.focus());
     fireEvent.keyDown(button, { key: "Escape" });
-    expect(button.getAttribute("aria-expanded")).toBe("false");
+    expect(document.querySelector(".volume")?.getAttribute("data-open")).toBe("false");
     expect(backend.hidePopover).not.toHaveBeenCalled();
 
     fireEvent.keyDown(button, { key: "Escape" });

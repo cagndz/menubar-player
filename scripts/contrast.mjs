@@ -42,15 +42,12 @@ const checks = [
   ["focus", "surface-0", UI, "focus ring on the popover"],
   ["focus", "surface-1", UI, "focus ring on a hovered row or the field"],
   ["focus", "surface-2", UI, "focus ring on a pressed control"],
-  ["focus", "surface-float", UI, "focus ring inside the volume panel"],
   ["text-muted", "surface-0", UI, "icon of the current track paused, bar while reconnecting"],
   ["text-muted", "surface-1", UI, "the same on a hovered row"],
   ["track", "surface-0", UI, "unplayed part of the progress bar"],
-  ["track", "surface-float", UI, "unfilled part of the volume slider, inside its panel"],
+  ["track", "surface-0", UI, "unfilled part of the volume slider"],
   ["text-muted", "surface-0", UI, "row icons"],
-  ["text", "surface-float", UI, "volume level inside its panel"],
-  ["text-muted", "surface-float", UI, "mute toggle, off"],
-  ["text", "surface-3", UI, "mute toggle, on"],
+  ["text", "surface-0", UI, "volume level"],
 ];
 
 let failed = 0;

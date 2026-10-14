@@ -252,23 +252,25 @@ function StateSheet() {
 
       <h3>Volume</h3>
       <div className="preview-row">
-        <Swatch label="high, open">
-          <div className="player" style={{ paddingTop: 150 }}>
+        <Swatch label="high, shown">
+          <div className="grid grid-cols-[auto_64px] items-center">
             <VolumeControl volume={80} muted={false} onVolumeChange={noop} onToggleMute={noop} force="open" />
           </div>
         </Swatch>
-        <Swatch label="low, open">
-          <div className="player" style={{ paddingTop: 150 }}>
+        <Swatch label="low, shown">
+          <div className="grid grid-cols-[auto_64px] items-center">
             <VolumeControl volume={30} muted={false} onVolumeChange={noop} onToggleMute={noop} force="open" />
           </div>
         </Swatch>
-        <Swatch label="muted, open">
-          <div className="player" style={{ paddingTop: 150 }}>
+        <Swatch label="muted, shown">
+          <div className="grid grid-cols-[auto_64px] items-center">
             <VolumeControl volume={80} muted onVolumeChange={noop} onToggleMute={noop} force="open" />
           </div>
         </Swatch>
-        <Swatch label="closed">
-          <VolumeControl volume={80} muted={false} onVolumeChange={noop} onToggleMute={noop} />
+        <Swatch label="hidden">
+          <div className="grid grid-cols-[auto_64px] items-center">
+            <VolumeControl volume={80} muted={false} onVolumeChange={noop} onToggleMute={noop} />
+          </div>
         </Swatch>
       </div>
     </section>
@@ -302,7 +304,7 @@ function Preview() {
     return (
       <div className="preview-shot">
         {shot === "volume" ? (
-          <Frame name="Volume open" volumeOpen />
+          <Frame name="Volume shown" volumeOpen />
         ) : shot === "error" ? (
           <Frame name="Rate limited" status="error" currentId="t2" error={strings.errors.rateLimited} retry />
         ) : (
@@ -317,7 +319,7 @@ function Preview() {
       <h1>Menubar Player · design preview</h1>
       <div className="preview-frames">
         <Frame name="Playing a two-hour set" />
-        <Frame name="Volume open" volumeOpen />
+        <Frame name="Volume shown" volumeOpen />
         <Frame name="Paused, track removed, muted" status="paused" undo muted />
         <Frame name="Loading" status="loading" currentId="t3" statusLabel={strings.status.loading} time={0} />
         <Frame name="Reconnecting…" recovering statusLabel={strings.status.recovering} />

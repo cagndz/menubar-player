@@ -1,6 +1,6 @@
 const FOCUSABLE = "input:not([disabled]), button:not([disabled]), [tabindex]";
 
-/** Elements Tab stops at inside `root`, in order. A closed panel is `inert`, so nothing in it counts. */
+/** Elements Tab stops at inside `root`, in order. A hidden slider is `inert`, so it doesn't count. */
 export function tabStops(root: ParentNode): HTMLElement[] {
   return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
     (element) => element.tabIndex >= 0 && !element.closest("[inert]"),
