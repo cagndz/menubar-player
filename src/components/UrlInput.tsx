@@ -44,7 +44,13 @@ export function UrlInput({ ref, onAdd, onEdit, onArrowDown }: UrlInputProps) {
 
     setAdding(true);
     try {
-      if (await onAdd(trimmed)) setUrl("");
+      if (await onAdd(trimmed)) {
+        setUrl("");
+      } else {
+        // The link stays, selected, so pasting another one replaces it at once.
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      }
     } finally {
       setAdding(false);
     }

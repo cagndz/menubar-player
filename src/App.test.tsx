@@ -190,6 +190,9 @@ describe("adding a track", () => {
     await add(input, "https://example.com/video");
 
     expect(input.value).toBe("https://example.com/video");
+    // Focused and selected: pasting another link replaces this one at once.
+    expect(document.activeElement).toBe(input);
+    expect([input.selectionStart, input.selectionEnd]).toEqual([0, input.value.length]);
     expect(screen.getByRole("alert").textContent).toBe("That isn't a YouTube link. Paste a YouTube video URL.");
     expect(backend.upsertTrack).not.toHaveBeenCalled();
   });
