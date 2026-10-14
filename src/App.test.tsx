@@ -227,6 +227,26 @@ describe("level bars in the library", () => {
   });
 });
 
+describe("removing from the keyboard", () => {
+  it("removes with Delete only from a focused row, never while typing a link", async () => {
+    await renderApp([saved("a"), saved("b")]);
+    backend.deleteTrack.mockClear();
+    const field = screen.getByRole("textbox", { name: "YouTube URL" });
+
+    act(() => field.focus());
+    fireEvent.change(field, { target: { value: "https://youtu.be/x" } });
+    for (const key of ["Delete", "Backspace"]) fireEvent.keyDown(field, { key });
+    expect(backend.deleteTrack).not.toHaveBeenCalled();
+
+    const row = screen.getAllByRole("listitem")[1];
+    act(() => row.focus());
+    await act(async () => {
+      fireEvent.keyDown(row, { key: "Delete" });
+    });
+    expect(backend.deleteTrack.mock.calls).toEqual([["b"]]);
+  });
+});
+
 describe("playing from the library", () => {
   it("starts from the row, not from the field", async () => {
     backend.resolveAudio.mockResolvedValue(resolved("a"));
