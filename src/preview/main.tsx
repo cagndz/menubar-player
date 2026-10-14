@@ -2,7 +2,6 @@
 // with sample data and never touches Tauri or the network, so it can be opened
 // in a plain browser at /preview.html.
 import { useEffect, useState, type ReactNode } from "react";
-import { MotionConfig } from "motion/react";
 import ReactDOM from "react-dom/client";
 import { PauseIcon, PlayIcon, PlayPauseIcon, NextIcon, RepeatIcon, RepeatOneIcon, SpinnerIcon, VolumeHighIcon } from "../components/icons";
 import { PlayerControls } from "../components/PlayerControls";
@@ -363,9 +362,7 @@ function Preview() {
 }
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <MotionConfig reducedMotion="user">
-    <Preview />
-  </MotionConfig>,
+  <Preview />,
 );
 
 // Every frame holds a URL field that asks for focus; keep the page at the top regardless.

@@ -1,12 +1,26 @@
 // @vitest-environment jsdom
 import { cleanup, render, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { PauseIcon, PlayIcon, PlayPauseIcon } from "./icons";
 
 const shapes = (container: HTMLElement) => Array.from(container.querySelectorAll("path")).map((path) => path.getAttribute("d"));
 const points = (d: string | null) => (d ?? "").match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
+
+/** Makes the system report Reduce Motion on or off. */
+function reduceMotion(on: boolean) {
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: on && query.includes("reduce"),
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
+}
+
+const frame = () => new Promise((resolve) => setTimeout(resolve, 40));
 
 describe("PlayPauseIcon", () => {
   it("draws play and pause with the same number of points, so one can become the other", () => {
@@ -43,5 +57,23 @@ describe("PlayPauseIcon", () => {
 
     view.rerender(<PlayPauseIcon playing={false} />);
     await waitFor(() => expect(shapes(view.container).map(points)).toEqual(play));
+  });
+
+  it("switches at once with Reduce Motion, and morphs over time without it", async () => {
+    const pause = shapes(render(<PauseIcon />).container).map(points);
+    cleanup();
+
+    reduceMotion(true);
+    const reduced = render(<PlayPauseIcon playing={false} />);
+    reduced.rerender(<PlayPauseIcon playing />);
+    await frame();
+    expect(shapes(reduced.container).map(points)).toEqual(pause);
+    cleanup();
+
+    reduceMotion(false);
+    const full = render(<PlayPauseIcon playing={false} />);
+    full.rerender(<PlayPauseIcon playing />);
+    await frame();
+    expect(shapes(full.container).map(points)).not.toEqual(pause);
   });
 });

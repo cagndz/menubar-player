@@ -2,8 +2,8 @@
 // Solid shapes with softly rounded corners for transport, a 1.5 px rounded
 // line for everything else. Purely decorative: the button carries the label.
 
-import { motion, useReducedMotion } from "motion/react";
-import { DURATION_MORPH, EASE_IN_OUT } from "../lib/motion";
+import { motion } from "motion/react";
+import { DURATION_MORPH, EASE_IN_OUT, useReducedMotion } from "../lib/motion";
 
 const box = { width: 16, height: 16, viewBox: "0 0 16 16", "aria-hidden": true } as const;
 /** Solid shape whose corners are rounded by a stroke of the same colour. */

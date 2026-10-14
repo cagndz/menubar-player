@@ -1,6 +1,6 @@
-import { useReducedMotion } from "motion/react";
 import { memo, useEffect, useImperativeHandle, useRef, useState, type KeyboardEvent, type Ref } from "react";
 import { formatTime } from "../lib/format";
+import { useReducedMotion } from "../lib/motion";
 import { strings } from "../lib/strings";
 import { PlayIcon, PlayPauseIcon, RemoveIcon } from "./icons";
 import { LevelBars } from "./LevelBars";

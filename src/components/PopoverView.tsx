@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
-import { DURATION_ENTER, DURATION_EXIT, EASE_OUT } from "../lib/motion";
+import { DURATION_ENTER, DURATION_EXIT, EASE_OUT, useReducedMotion } from "../lib/motion";
 import { strings } from "../lib/strings";
 import { ScrollArea } from "./ScrollArea";
 
@@ -33,6 +33,7 @@ interface PopoverViewProps {
  */
 export function PopoverView(props: PopoverViewProps) {
   const { urlInput, addNotice, list, libraryError, onUndo, title, statusLabel, error, onRetry, controls, devTools } = props;
+  const reducedMotion = useReducedMotion();
 
   return (
     <main className="popover">
@@ -55,13 +56,14 @@ export function PopoverView(props: PopoverViewProps) {
         <ScrollArea>{list}</ScrollArea>
       </section>
 
-      {/* The one thing that slides: it arrives after an action and leaves by itself. */}
+      {/* The one thing that slides: it arrives after an action and leaves by itself.
+          With reduced motion it only fades. */}
       <AnimatePresence initial={false}>
         {onUndo && (
           <motion.p
             role="status"
             className="notice px-3 py-1.5"
-            initial={{ opacity: 0, y: 4 }}
+            initial={{ opacity: 0, y: reducedMotion ? 0 : 4 }}
             animate={{ opacity: 1, y: 0, transition: { duration: DURATION_ENTER, ease: EASE_OUT } }}
             exit={{ opacity: 0, transition: { duration: DURATION_EXIT, ease: EASE_OUT } }}
           >
