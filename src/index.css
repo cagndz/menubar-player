@@ -864,6 +864,8 @@ input {
     user-select: text;
     -webkit-user-select: text;
     cursor: text;
+    /* No last line left with a single word ("…add a track."). */
+    text-wrap: pretty;
   }
   :is(.notice, .error-block) button {
     cursor: default;
