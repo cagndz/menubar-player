@@ -53,7 +53,6 @@
   --delay-busy: 150ms;
   /* What unfolds from a button: quick out of the gate, a long soft landing. */
   --ease-pop: cubic-bezier(0.2, 0, 0, 1);
-  --duration-pop: 150ms;
 }
 
 /* Light theme: the same tokens when the system is in light mode. The webview
@@ -664,7 +663,7 @@ input {
     border-radius: 999px;
     background: var(--color-text);
     opacity: 0;
-    transition: opacity 100ms ease;
+    transition: opacity 100ms var(--ease-out);
   }
   /* A value that ticks along once a second glides between ticks; linear, since
      it is constant motion. Never while dragging, seeking or paused. */
@@ -760,17 +759,18 @@ input {
     /* Going back, the line is seen travelling all the way into the button:
        it stays fully opaque and only fades over the last 30 % of the way. */
     transition:
-      clip-path 160ms var(--ease-in-out),
-      opacity 48ms linear 112ms,
-      visibility 0s linear 160ms;
+      clip-path 150ms var(--ease-in-out),
+      opacity 45ms linear 105ms,
+      visibility 0s linear 150ms;
   }
   .volume[data-open="true"] .volume-slider {
     visibility: visible;
     opacity: 1;
     clip-path: inset(-8px -8px -8px 0);
+    /* Arriving takes longer than leaving. */
     transition:
-      clip-path var(--duration-pop) var(--ease-pop),
-      opacity var(--duration-pop) var(--ease-pop),
+      clip-path var(--duration-enter) var(--ease-pop),
+      opacity var(--duration-enter) var(--ease-pop),
       visibility 0s;
   }
   /* The slider itself takes the pointer over the whole 32 px, and so does the
@@ -880,7 +880,7 @@ input {
   .slider-tip,
   .slider-tip[data-shown="true"] {
     transform: translate(-50%, 0);
-    transition: opacity var(--duration-exit) linear;
+    transition: opacity var(--duration-exit) var(--ease-out);
   }
   .volume-slider,
   .volume[data-open="true"] .volume-slider {
@@ -888,7 +888,7 @@ input {
   }
   .volume-slider {
     transition:
-      opacity 160ms var(--ease-in-out),
-      visibility 0s linear 160ms;
+      opacity 150ms var(--ease-in-out),
+      visibility 0s linear 150ms;
   }
 }

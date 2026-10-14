@@ -19,8 +19,10 @@ use objc2_quartz_core::CAMediaTimingFunction;
 // Leaving is quicker than arriving: once the user is done, it gets out of the way.
 const FADE_IN: Duration = Duration::from_millis(180);
 const FADE_OUT: Duration = Duration::from_millis(150);
-/// Core Animation's ease-out: most of the change early, then a long settle.
-const EASE_OUT: [f64; 4] = [0.0, 0.0, 0.58, 1.0];
+/// Core Animation's own ease-out (`kCAMediaTimingFunctionEaseOut`), chosen on
+/// purpose instead of the webview's `--ease-out` token: the window fades the
+/// way the system's own panels do. Gentler at the start than the token.
+const SYSTEM_EASE_OUT: [f64; 4] = [0.0, 0.0, 0.58, 1.0];
 
 /// A fade under way, as much as is needed to know the opacity at any moment.
 #[derive(Clone, Copy, Debug)]
@@ -37,7 +39,7 @@ impl Run {
             return self.to;
         }
         let t = now.duration_since(self.started).as_secs_f64() / self.duration.as_secs_f64();
-        self.from + (self.to - self.from) * cubic_bezier(EASE_OUT, t.clamp(0.0, 1.0))
+        self.from + (self.to - self.from) * cubic_bezier(SYSTEM_EASE_OUT, t.clamp(0.0, 1.0))
     }
 }
 
@@ -142,7 +144,7 @@ impl Fader {
             // SAFETY: AppKit passes the current animation context, valid for this call.
             let context = unsafe { context.as_ref() };
             context.setDuration(duration.as_secs_f64());
-            let [x1, y1, x2, y2] = EASE_OUT.map(|value| value as f32);
+            let [x1, y1, x2, y2] = SYSTEM_EASE_OUT.map(|value| value as f32);
             context.setTimingFunction(Some(&CAMediaTimingFunction::functionWithControlPoints(
                 x1, y1, x2, y2,
             )));
@@ -187,15 +189,15 @@ mod tests {
 
     #[test]
     fn eases_out_from_0_to_1() {
-        assert_eq!(cubic_bezier(EASE_OUT, 0.0), 0.0);
-        assert!((cubic_bezier(EASE_OUT, 1.0) - 1.0).abs() < 1e-6);
+        assert_eq!(cubic_bezier(SYSTEM_EASE_OUT, 0.0), 0.0);
+        assert!((cubic_bezier(SYSTEM_EASE_OUT, 1.0) - 1.0).abs() < 1e-6);
         // Most of the change happens early: 0.68 of it by half time, and 0.91
         // by three quarters (values of this curve, worked out separately).
-        assert!((cubic_bezier(EASE_OUT, 0.5) - 0.6846).abs() < 0.001);
-        assert!((cubic_bezier(EASE_OUT, 0.75) - 0.9065).abs() < 0.001);
+        assert!((cubic_bezier(SYSTEM_EASE_OUT, 0.5) - 0.6846).abs() < 0.001);
+        assert!((cubic_bezier(SYSTEM_EASE_OUT, 0.75) - 0.9065).abs() < 0.001);
         let mut last = 0.0;
         for step in 1..=20 {
-            let value = cubic_bezier(EASE_OUT, step as f64 / 20.0);
+            let value = cubic_bezier(SYSTEM_EASE_OUT, step as f64 / 20.0);
             assert!(value >= last);
             last = value;
         }
