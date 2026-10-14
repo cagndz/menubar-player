@@ -4,6 +4,7 @@ import { useReducedMotion } from "../lib/motion";
 import { strings } from "../lib/strings";
 import { PlayIcon, PlayPauseIcon, RemoveIcon } from "./icons";
 import { LevelBars } from "./LevelBars";
+import { MarqueeText } from "./MarqueeText";
 import type { Track } from "../lib/tauri";
 
 export interface TrackListHandle {
@@ -135,6 +136,7 @@ export const TrackList = memo(function TrackList(props: TrackListProps) {
             onFocus={() => setActiveIndex(index)}
             onClick={() => onPlay(track)}
             onKeyDown={(event) => handleKeyDown(event, index, track)}
+            data-marquee-host
             className="row"
           >
             {/* The state of the current track and the action on the row share one spot:
@@ -151,7 +153,7 @@ export const TrackList = memo(function TrackList(props: TrackListProps) {
                 {isCurrent ? <PlayPauseIcon playing={rowState === "playing"} /> : <PlayIcon />}
               </button>
             </span>
-            <span className="min-w-0 flex-1 truncate">{track.title}</span>
+            <MarqueeText text={track.title} className="min-w-0 flex-1" />
             <span className="row-end">
               {track.duration > 0 && <span className="row-duration">{formatTime(track.duration)}</span>}
               <button

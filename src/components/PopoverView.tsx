@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import type { ReactNode } from "react";
 import { DURATION_ENTER, DURATION_EXIT, EASE_OUT, useReducedMotion } from "../lib/motion";
 import { strings } from "../lib/strings";
+import { MarqueeText } from "./MarqueeText";
 import { ScrollArea } from "./ScrollArea";
 
 interface PopoverViewProps {
@@ -90,18 +91,16 @@ export function PopoverView(props: PopoverViewProps) {
             )}
           </p>
         )}
-        {/* The title sits centred over the player. */}
-        <div className="flex min-h-[18px] flex-col items-center text-center">
-          {title ? (
-            <p data-slot="track-title" className="max-w-full truncate font-medium">
-              {title}
-            </p>
-          ) : (
-            // Holds the title's place, so the popover keeps its layout with nothing loaded.
-            <p data-slot="track-title" className="text-text-muted">
-              {strings.controls.nothingPlaying}
-            </p>
-          )}
+        {/* The title sits centred over the player, no wider than the progress bar below it. */}
+        <div>
+          <p data-slot="track-title" data-marquee-host className="player-title">
+            {title ? (
+              <MarqueeText text={title} className="font-medium" />
+            ) : (
+              // Holds the title's place, so the popover keeps its layout with nothing loaded.
+              <span className="text-text-muted">{strings.controls.nothingPlaying}</span>
+            )}
+          </p>
           <p role="status" className="sr-only">
             {statusLabel}
           </p>

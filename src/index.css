@@ -569,6 +569,54 @@ input {
     height: 36px;
   }
 
+  /* ---- titles that don't fit ----
+     An ellipsis at rest; while scrolling (MarqueeText), the text runs free
+     and both edges fade out. */
+
+  .marquee {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .marquee-text {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .marquee[data-running="true"] {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 10px, #000 calc(100% - 10px), transparent);
+    mask-image: linear-gradient(to right, transparent, #000 10px, #000 calc(100% - 10px), transparent);
+  }
+  .marquee[data-running="true"] .marquee-text {
+    width: max-content;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  /* The title over the player spans the progress bar, not the whole footer:
+     a hidden copy of the longest time stands at each side, as wide as the
+     time labels under it. */
+  .player-title {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: 8px;
+    min-height: var(--text-body--line-height);
+    text-align: center;
+  }
+  .player-title::before,
+  .player-title::after {
+    content: "0:00:00";
+    height: 0;
+    visibility: hidden;
+    font-size: var(--text-small);
+    font-variant-numeric: tabular-nums;
+  }
+  .player-title > * {
+    justify-self: center;
+    max-width: 100%;
+  }
+
   /* ---- elapsed time and duration, at either end of the progress bar ---- */
 
   .time {
