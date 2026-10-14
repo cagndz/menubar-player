@@ -87,6 +87,20 @@ describe("TrackList row state", () => {
     expect(screen.getByRole("button", { name: "Play Track b" })).toBeTruthy();
   });
 
+  it("puts the bars on the row of the current track, by id, moving only while it plays", () => {
+    const { rows } = setup(["a", "b", "c"], { id: "b", playing: true });
+    const barsIn = (row: HTMLElement) => row.querySelector('[role="img"]');
+
+    expect(barsIn(rows[0])).toBeNull();
+    expect(barsIn(rows[1])?.getAttribute("data-playing")).toBe("true");
+    expect(barsIn(rows[2])).toBeNull();
+    cleanup();
+
+    const paused = setup(["a", "b", "c"], { id: "c", playing: false });
+    expect(barsIn(paused.rows[2])?.getAttribute("data-playing")).toBe("false");
+    expect(paused.rows.slice(0, 2).map(barsIn)).toEqual([null, null]);
+  });
+
   it("tells the state of the current track apart from its action", () => {
     setup(["a", "b"], { id: "a", playing: true });
     expect(screen.getAllByRole("img").map((image) => image.getAttribute("aria-label"))).toEqual(["Now playing"]);

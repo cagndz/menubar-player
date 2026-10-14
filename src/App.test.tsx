@@ -196,6 +196,37 @@ describe("menu bar icon", () => {
   });
 });
 
+describe("level bars in the library", () => {
+  const bars = () =>
+    screen.queryAllByRole("img").map((image) => ({
+      row: image.closest("li")?.textContent?.includes("Track b") ? "b" : "a",
+      label: image.getAttribute("aria-label"),
+      moving: image.getAttribute("data-playing"),
+    }));
+
+  it("go on the row of the track actually loaded, move while it plays and hold in pause", async () => {
+    backend.resolveAudio.mockResolvedValue(resolved("b"));
+    backend.upsertTrack.mockResolvedValue([saved("a"), saved("b")]);
+    await renderApp([saved("a"), saved("b")]);
+    // Nothing loaded: no indicator anywhere.
+    expect(bars()).toEqual([]);
+
+    const audio = document.querySelector("audio")!;
+    await act(async () => {
+      fireEvent.click(screen.getAllByRole("listitem")[1]);
+    });
+    // Loading: the row is current but nothing is playing yet.
+    expect(bars()).toEqual([{ row: "b", label: "Paused", moving: "false" }]);
+
+    await act(async () => void audio.dispatchEvent(new Event("playing")));
+    expect(bars()).toEqual([{ row: "b", label: "Now playing", moving: "true" }]);
+
+    Object.defineProperty(audio, "readyState", { configurable: true, get: () => 4 });
+    await act(async () => void audio.dispatchEvent(new Event("pause")));
+    expect(bars()).toEqual([{ row: "b", label: "Paused", moving: "false" }]);
+  });
+});
+
 describe("playing from the library", () => {
   it("starts from the row, not from the field", async () => {
     backend.resolveAudio.mockResolvedValue(resolved("a"));
