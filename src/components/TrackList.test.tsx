@@ -87,6 +87,19 @@ describe("TrackList row state", () => {
     expect(screen.getByRole("button", { name: "Play Track b" })).toBeTruthy();
   });
 
+  it("tells the state of the current track apart from its action", () => {
+    setup(["a", "b"], { id: "a", playing: true });
+    expect(screen.getAllByRole("img").map((image) => image.getAttribute("aria-label"))).toEqual(["Now playing"]);
+    cleanup();
+
+    setup(["a", "b"], { id: "b", playing: false });
+    expect(screen.getAllByRole("img").map((image) => image.getAttribute("aria-label"))).toEqual(["Paused"]);
+    cleanup();
+
+    setup(["a", "b"]);
+    expect(screen.queryAllByRole("img")).toHaveLength(0);
+  });
+
   it("offers to play the current track while it is paused", () => {
     const { rows } = setup(["a", "b"], { id: "b", playing: false });
 

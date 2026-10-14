@@ -271,24 +271,70 @@ input {
     height: 20px;
     border-radius: 4px;
     color: var(--color-text-muted);
-    /* The state icon shows on hover or focus of the row, and always for the
-       current track. The X is the pointer's way to remove, so only the pointer
-       brings it out: a row focused from the keyboard shows the one thing Enter does. */
+    /* The action shows on hover or focus of the row. The X is the pointer's way
+       to remove, so only the pointer brings it out: a row focused from the
+       keyboard shows the one thing Enter does. */
     opacity: 0;
-    transition: opacity 100ms ease;
+    transition: opacity var(--duration-exit) var(--ease-out);
   }
   .row:is(:hover, :focus-visible, :focus-within, [data-force~="hover"], [data-force~="focus"]) .row-icon,
-  .row:is(:hover, [data-force~="hover"]) .row-remove,
-  .row[aria-current="true"] .row-icon {
+  .row:is(:hover, [data-force~="hover"]) .row-remove {
     opacity: 1;
   }
-  /* The current track is told apart by its icon being there at all, in full white. */
-  .row[data-state="playing"] .row-icon {
+  .row[aria-current="true"] .row-icon {
     color: var(--color-text);
   }
-  .row[data-state="paused"] .row-icon {
+
+  /* The state of the current track and the row's action, stacked in one spot.
+     At rest the bars say what is happening; on hover or focus they give way to
+     the button, so a state is never mistaken for something to press. */
+  .row-lead {
+    display: grid;
+    flex-shrink: 0;
+  }
+  .row-lead > * {
+    grid-area: 1 / 1;
+  }
+  .level-bars {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    color: var(--color-text);
+    transition: opacity var(--duration-exit) var(--ease-out);
+  }
+  .level-bars[data-playing="false"] {
     color: var(--color-text-muted);
   }
+  .row:is(:hover, :focus-visible, :focus-within, [data-force~="hover"], [data-force~="focus"]) .level-bars {
+    opacity: 0;
+  }
+
+  /* Each bar rises and falls from its foot on a loop of its own length, so the
+     three never line up into a pattern. Pause holds them where they are, which
+     also leaves them at different heights; resuming carries on from there.
+     The delays pick the frame shown before anything has played: middle, high,
+     low, never a rising staircase (that reads as signal strength). */
+  .level-bars rect {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation: level-a 1.13s cubic-bezier(0.45, 0, 0.55, 1) -0.73s infinite;
+  }
+  .level-bars rect:nth-child(2) {
+    animation-name: level-b;
+    animation-duration: 0.87s;
+    animation-delay: -0.35s;
+  }
+  .level-bars rect:nth-child(3) {
+    animation-name: level-c;
+    animation-duration: 1.37s;
+    animation-delay: -0.41s;
+  }
+  .level-bars[data-playing="false"] rect,
+  :root[data-window="hidden"] .level-bars rect {
+    animation-play-state: paused;
+  }
+
   .row-remove:is(:hover, [data-force~="hover"]) {
     color: var(--color-text);
     background: var(--color-surface-3);
@@ -590,6 +636,45 @@ input {
   }
 }
 
+/* Scale only, never height: nothing is laid out again on each frame.
+   Never below 0.4, where the rounded ends would start to look squashed. */
+@keyframes level-a {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  35% {
+    transform: scaleY(0.45);
+  }
+  65% {
+    transform: scaleY(0.8);
+  }
+}
+@keyframes level-b {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+  }
+  40% {
+    transform: scaleY(1);
+  }
+  70% {
+    transform: scaleY(0.4);
+  }
+}
+@keyframes level-c {
+  0%,
+  100% {
+    transform: scaleY(0.7);
+  }
+  30% {
+    transform: scaleY(0.4);
+  }
+  60% {
+    transform: scaleY(1);
+  }
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -609,6 +694,10 @@ input {
     transition: none;
   }
   .busy-swap[data-busy="true"] > .spinner {
+    animation: none;
+  }
+  /* The bars keep the menu bar icon's shape, still. */
+  .level-bars rect {
     animation: none;
   }
   .slider-tip,

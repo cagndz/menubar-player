@@ -3,6 +3,9 @@ import ReactDOM from "react-dom/client";
 import { MotionConfig } from "motion/react";
 import App from "./App";
 import "./index.css";
+import { trackWindowShown } from "./lib/windowShown";
+
+trackWindowShown();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

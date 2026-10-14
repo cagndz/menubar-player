@@ -162,6 +162,10 @@ function StateSheet() {
         <TrackList tracks={LIBRARY.slice(0, 1)} currentId="t1" playing={false} onPlay={noop} onDelete={noop} onExitUp={noop} />
       </div>
       <p className="preview-note">current, paused</p>
+      <div className="preview-window preview-window--auto">
+        <TrackList tracks={LIBRARY.slice(0, 2)} currentId="t1" playing onPlay={noop} onDelete={noop} onExitUp={noop} force={{ t1: "hover" }} />
+      </div>
+      <p className="preview-note">current, playing, hover: the action replaces the bars</p>
 
       <h3>Player buttons</h3>
       <div className="preview-row">

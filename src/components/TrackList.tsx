@@ -3,6 +3,7 @@ import { useEffect, useImperativeHandle, useRef, useState, type KeyboardEvent, t
 import { formatTime } from "../lib/format";
 import { strings } from "../lib/strings";
 import { PlayIcon, PlayPauseIcon, RemoveIcon } from "./icons";
+import { LevelBars } from "./LevelBars";
 import type { Track } from "../lib/tauri";
 
 export interface TrackListHandle {
@@ -131,15 +132,20 @@ export function TrackList(props: TrackListProps) {
             onKeyDown={(event) => handleKeyDown(event, index, track)}
             className="row"
           >
-            {/* No handler of its own: the click reaches the row, which does the same thing. */}
-            <button
-              type="button"
-              tabIndex={-1}
-              aria-label={rowState === "playing" ? strings.library.pause(track.title) : strings.library.play(track.title)}
-              className="row-icon"
-            >
-              {isCurrent ? <PlayPauseIcon playing={rowState === "playing"} /> : <PlayIcon />}
-            </button>
+            {/* The state of the current track and the action on the row share one spot:
+                the bars show what is happening, the button (on hover or focus) what a click does. */}
+            <span className="row-lead">
+              {isCurrent && <LevelBars playing={rowState === "playing"} />}
+              {/* No handler of its own: the click reaches the row, which does the same thing. */}
+              <button
+                type="button"
+                tabIndex={-1}
+                aria-label={rowState === "playing" ? strings.library.pause(track.title) : strings.library.play(track.title)}
+                className="row-icon"
+              >
+                {isCurrent ? <PlayPauseIcon playing={rowState === "playing"} /> : <PlayIcon />}
+              </button>
+            </span>
             <span className="min-w-0 flex-1 truncate">{track.title}</span>
             {track.duration > 0 && <span className="row-duration">{formatTime(track.duration)}</span>}
             {/* Always takes its space, so appearing on hover never shifts the title. */}

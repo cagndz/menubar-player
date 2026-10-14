@@ -45,6 +45,8 @@ export const strings = {
     alreadyAdded: "Already in your library",
     play: (title: string) => `Play ${title}`,
     pause: (title: string) => `Pause ${title}`,
+    nowPlaying: "Now playing",
+    paused: "Paused",
     remove: "Remove track",
     removed: "Track removed",
     removedSeparator: " · ",
