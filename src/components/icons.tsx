@@ -90,18 +90,8 @@ export function RemoveIcon() {
 
 const loop = "M3 7.250V6.500a2 2 0 0 1 2-2h7.250M10.500 2.750 12.250 4.500 10.500 6.250M13 8.750v.750a2 2 0 0 1-2 2H3.750M5.500 13.250 3.750 11.500 5.500 9.750";
 
-/** Loop arrows, faded and crossed out. */
-export function RepeatOffIcon() {
-  return (
-    <svg {...box} {...line}>
-      <path d={loop} opacity="0.4" />
-      <path d="M2.750 2.750l10.500 10.500" />
-    </svg>
-  );
-}
-
-/** Plain loop arrows. */
-export function RepeatAllIcon() {
+/** Plain loop arrows: repeat off (dimmed) and repeat all (with a dot under it, drawn by the button). */
+export function RepeatIcon() {
   return (
     <svg {...box} {...line}>
       <path d={loop} />

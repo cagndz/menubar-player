@@ -4,7 +4,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { MotionConfig } from "motion/react";
 import ReactDOM from "react-dom/client";
-import { PauseIcon, PlayIcon, PlayPauseIcon, NextIcon, RepeatAllIcon, SpinnerIcon, VolumeHighIcon } from "../components/icons";
+import { PauseIcon, PlayIcon, PlayPauseIcon, NextIcon, RepeatIcon, RepeatOneIcon, SpinnerIcon, VolumeHighIcon } from "../components/icons";
 import { PlayerControls } from "../components/PlayerControls";
 import { PopoverView } from "../components/PopoverView";
 import { TrackList } from "../components/TrackList";
@@ -178,7 +178,7 @@ function StateSheet() {
               <PauseIcon />
             </button>
             <button type="button" className="icon-button" data-force={force}>
-              <RepeatAllIcon />
+              <RepeatIcon />
             </button>
           </Swatch>
         ))}
@@ -193,6 +193,20 @@ function StateSheet() {
             <VolumeHighIcon />
           </button>
         </Swatch>
+      </div>
+
+      <h3>Repeat</h3>
+      <div className="preview-row">
+        {(["off", "all", "one"] as const).map((mode) => (
+          <Swatch key={mode} label={mode}>
+            <button type="button" className="icon-button repeat-button" data-repeat={mode}>
+              {mode === "one" ? <RepeatOneIcon /> : <RepeatIcon />}
+            </button>
+            <button type="button" className="icon-button repeat-button" data-repeat={mode} data-force="hover">
+              {mode === "one" ? <RepeatOneIcon /> : <RepeatIcon />}
+            </button>
+          </Swatch>
+        ))}
       </div>
 
       <h3>Field and Add</h3>

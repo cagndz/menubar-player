@@ -46,7 +46,8 @@ const checks = [
   ["text-muted", "surface-1", UI, "the same on a hovered row"],
   ["track", "surface-0", UI, "unplayed part of the progress bar"],
   ["track", "surface-0", UI, "unfilled part of the volume slider"],
-  ["text-muted", "surface-0", UI, "row icons"],
+  ["text-muted", "surface-0", UI, "row icons, repeat off"],
+  ["text-muted", "surface-1", UI, "repeat off under the pointer"],
   ["text", "surface-0", UI, "volume level"],
 ];
 

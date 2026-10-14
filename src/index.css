@@ -495,6 +495,27 @@ input {
     color: var(--color-text);
   }
 
+  /* Repeat is one loop in three states. Off is the loop dimmed, not crossed
+     out, which would read as unavailable; all is the loop lit with a dot
+     under it; one is the loop lit around a "1". */
+  .repeat-button {
+    position: relative;
+  }
+  .repeat-button[data-repeat="off"] {
+    color: var(--color-text-muted);
+  }
+  .repeat-button[data-repeat="all"]::after {
+    content: "";
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    width: 3px;
+    height: 3px;
+    margin-left: -1.5px;
+    border-radius: 999px;
+    background: currentColor;
+  }
+
   /* The main action is told apart by size alone: a larger glyph, no plate behind it. */
   .play-button {
     width: 36px;

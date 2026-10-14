@@ -3,7 +3,7 @@ import type { PlayerStatus } from "../hooks/usePlayer";
 import { formatTime } from "../lib/format";
 import type { RepeatMode } from "../lib/mediaNavigation";
 import { strings } from "../lib/strings";
-import { NextIcon, PlayPauseIcon, PreviousIcon, RepeatAllIcon, RepeatOffIcon, RepeatOneIcon, SpinnerIcon } from "./icons";
+import { NextIcon, PlayPauseIcon, PreviousIcon, RepeatIcon, RepeatOneIcon, SpinnerIcon } from "./icons";
 import { Slider } from "./Slider";
 
 const SEEK_STEP_SECONDS = 1;
@@ -29,12 +29,12 @@ interface PlayerControlsProps {
   children?: ReactNode;
 }
 
-const REPEAT_ICON = { off: RepeatOffIcon, all: RepeatAllIcon, one: RepeatOneIcon };
+const REPEAT_ICON = { off: RepeatIcon, all: RepeatIcon, one: RepeatOneIcon };
 
 export function PlayerControls(props: PlayerControlsProps) {
   const { status, recovering = false, currentTime, duration, onToggle, onSeek } = props;
   const { onPrevious, onNext, canPrevious, canNext, repeat, onCycleRepeat, children } = props;
-  const RepeatIcon = REPEAT_ICON[repeat];
+  const RepeatModeIcon = REPEAT_ICON[repeat];
   // While dragging or stepping, the bar follows the hand instead of playback.
   const [scrub, setScrub] = useState<number | null>(null);
 
@@ -106,8 +106,14 @@ export function PlayerControls(props: PlayerControlsProps) {
           the right one also holds the volume slider when it shows. */}
       <div className="grid grid-cols-[1fr_auto_auto_auto_1fr] items-center">
         <span />
-        <button type="button" onClick={onCycleRepeat} aria-label={strings.controls.repeat[repeat]} className="icon-button mr-3">
-          <RepeatIcon />
+        <button
+          type="button"
+          onClick={onCycleRepeat}
+          aria-label={strings.controls.repeat[repeat]}
+          data-repeat={repeat}
+          className="icon-button repeat-button mr-3"
+        >
+          <RepeatModeIcon />
         </button>
         <div className="flex items-center gap-1">
           <button type="button" onClick={onPrevious} disabled={!canPrevious} aria-label={strings.controls.previous} className="icon-button">
