@@ -62,7 +62,7 @@ describe("MarqueeText", () => {
     expect(screen.getByTitle(LONG).textContent).toBe(LONG);
   });
 
-  it("waits half a second on hover, then loops round at a constant speed after a hold at the start", async () => {
+  it("waits half a second on hover, then loops round at a constant speed without stopping", async () => {
     layout({ text: 600, box: 200 });
     const host = setup();
 
@@ -73,13 +73,9 @@ describe("MarqueeText", () => {
     await act(() => vi.advanceTimersByTimeAsync(100));
     expect(animate).toHaveBeenCalledOnce();
     const [keyframes, options] = animate.mock.calls[0];
-    // One pass is the title (600 px) plus the 32 px gap, at 40 px a second, after a 1 s hold.
-    expect(keyframes).toEqual([
-      { transform: "translateX(0)", offset: 0 },
-      { transform: "translateX(0)", offset: 1000 / 16_800 },
-      { transform: "translateX(-632px)", offset: 1 },
-    ]);
-    expect(options).toEqual({ duration: 16_800, easing: "linear", iterations: Infinity });
+    // One pass is the title (600 px) plus the 32 px gap, at 40 px a second.
+    expect(keyframes).toEqual([{ transform: "translateX(0)" }, { transform: "translateX(-632px)" }]);
+    expect(options).toEqual({ duration: 15_800, easing: "linear", iterations: Infinity });
   });
 
   it("brings in a copy of the title only while it scrolls, hidden from assistive technology", async () => {

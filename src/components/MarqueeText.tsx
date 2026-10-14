@@ -5,8 +5,6 @@ import { EASE_OUT, useReducedMotion } from "../lib/motion";
 const PIXELS_PER_SECOND = 40;
 /** Before it starts: passing over a row on the way somewhere moves nothing. */
 const START_DELAY_MS = 500;
-/** Held at the start of every pass. */
-const HOLD_MS = 1000;
 /** Space between the title and the copy that follows it round. */
 const GAP_PX = 32;
 /** Going back to the start once the hover or the focus ends. */
@@ -124,16 +122,13 @@ export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
   useEffect(() => {
     const track = trackRef.current;
     if (!running || !track || typeof track.animate !== "function" || loopRef.current) return;
-    const travel = (distance / PIXELS_PER_SECOND) * 1000;
-    // One pass: held at the start, then a constant glide one title and gap along.
-    loopRef.current = track.animate(
-      [
-        { transform: "translateX(0)", offset: 0 },
-        { transform: "translateX(0)", offset: HOLD_MS / (HOLD_MS + travel) },
-        { transform: `translateX(${-distance}px)`, offset: 1 },
-      ],
-      { duration: HOLD_MS + travel, easing: "linear", iterations: Infinity },
-    );
+    // One pass moves the title and its gap along at a constant speed, with no
+    // stop: the copy comes round into the title's place and carries straight on.
+    loopRef.current = track.animate([{ transform: "translateX(0)" }, { transform: `translateX(${-distance}px)` }], {
+      duration: (distance / PIXELS_PER_SECOND) * 1000,
+      easing: "linear",
+      iterations: Infinity,
+    });
   }, [running, distance]);
 
   // Nothing is left running once the title goes away.
