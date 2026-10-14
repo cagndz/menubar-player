@@ -102,10 +102,12 @@ export function onQuitRequested(handler: () => void): () => void {
   return () => void unlisten.then((stop) => stop());
 }
 
-/** Logs to the webview console and, in dev, to the `tauri dev` terminal. */
+/**
+ * Development only: logs to the webview console and to the `tauri dev`
+ * terminal. A release build writes nothing, and the bundler drops the body.
+ */
 export function debugLog(message: string): void {
+  if (!import.meta.env.DEV) return;
   console.log(message);
-  if (import.meta.env.DEV) {
-    void invoke("frontend_log", { message }).catch(() => {});
-  }
+  void invoke("frontend_log", { message }).catch(() => {});
 }
