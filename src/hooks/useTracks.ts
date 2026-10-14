@@ -2,15 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toUserMessage } from "../lib/errors";
 import { forgetStream } from "../lib/resolver";
 import { strings } from "../lib/strings";
-import {
-  deleteTrack,
-  listTracks,
-  restoreTrack,
-  setTrackPosition,
-  upsertTrack,
-  type ResolvedAudio,
-  type Track,
-} from "../lib/tauri";
+import { deleteTrack, listTracks, restoreTrack, setTrackPosition, upsertTrack, type ResolvedAudio, type Track } from "../lib/tauri";
 
 const UNDO_WINDOW_MS = 6_000;
 

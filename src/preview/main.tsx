@@ -139,7 +139,13 @@ function StateSheet() {
     ["focus", "focus"],
     ["pressed", "active"],
   ];
-  const sliderProps = { value: 5025, max: 7650, formatTip: formatTime, onCommit: noop, inputProps: { "aria-label": "Progress", readOnly: true } };
+  const sliderProps = {
+    value: 5025,
+    max: 7650,
+    formatTip: formatTime,
+    onCommit: noop,
+    inputProps: { "aria-label": "Progress", readOnly: true },
+  };
 
   return (
     <section className="preview-sheet">
@@ -163,7 +169,15 @@ function StateSheet() {
       </div>
       <p className="preview-note">current, paused</p>
       <div className="preview-window preview-window--auto">
-        <TrackList tracks={LIBRARY.slice(0, 2)} currentId="t1" playing onPlay={noop} onDelete={noop} onExitUp={noop} force={{ t1: "hover" }} />
+        <TrackList
+          tracks={LIBRARY.slice(0, 2)}
+          currentId="t1"
+          playing
+          onPlay={noop}
+          onDelete={noop}
+          onExitUp={noop}
+          force={{ t1: "hover" }}
+        />
       </div>
       <p className="preview-note">current, playing, hover: the action replaces the bars</p>
 
@@ -213,7 +227,13 @@ function StateSheet() {
       <div className="preview-row">
         {states.map(([label, force]) => (
           <Swatch key={label} label={label}>
-            <input className="field" style={{ width: 150 }} placeholder={strings.urlInput.placeholder} data-force={label === "focus" ? force : undefined} readOnly />
+            <input
+              className="field"
+              style={{ width: 150 }}
+              placeholder={strings.urlInput.placeholder}
+              data-force={label === "focus" ? force : undefined}
+              readOnly
+            />
             <button type="button" className="button" data-force={force}>
               {strings.urlInput.submit}
             </button>
@@ -361,9 +381,7 @@ function Preview() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <Preview />,
-);
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(<Preview />);
 
 // Every frame holds a URL field that asks for focus; keep the page at the top regardless.
 window.setTimeout(() => {

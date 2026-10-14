@@ -21,9 +21,7 @@ const resolved = (id: string, expiresInSeconds: number | null = 6 * 3600): Resol
 /** A resolver whose promises are settled by hand. */
 function manualResolver() {
   const calls: { resolve: (value: ResolvedAudio) => void; reject: (error: unknown) => void }[] = [];
-  const resolve = vi.fn(
-    (_target: typeof a) => new Promise<ResolvedAudio>((res, rej) => calls.push({ resolve: res, reject: rej })),
-  );
+  const resolve = vi.fn((_target: typeof a) => new Promise<ResolvedAudio>((res, rej) => calls.push({ resolve: res, reject: rej })));
   return { resolve, calls };
 }
 

@@ -3,8 +3,7 @@
 import { readFileSync } from "node:fs";
 
 const css = readFileSync(new URL("../src/index.css", import.meta.url), "utf8");
-const readTokens = (block) =>
-  Object.fromEntries([...block.matchAll(/--color-([\w-]+):\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
+const readTokens = (block) => Object.fromEntries([...block.matchAll(/--color-([\w-]+):\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]));
 
 // Dark is the @theme block; light is the block under prefers-color-scheme, on top of it.
 const lightStart = css.indexOf("@media (prefers-color-scheme: light)");
@@ -64,7 +63,9 @@ for (const [name, tokens] of Object.entries(themes)) {
       `${ok ? "ok  " : "FAIL"} ${value.toFixed(2).padStart(5)}:1  (min ${minimum}:1)  ${fg} ${tokens[fg]} on ${bg} ${tokens[bg]}  — ${use}`,
     );
   }
-  console.log(`     decorative only, no minimum: line ${tokens.line} on surface-0 = ${ratio(tokens.line, tokens["surface-0"]).toFixed(2)}:1`);
+  console.log(
+    `     decorative only, no minimum: line ${tokens.line} on surface-0 = ${ratio(tokens.line, tokens["surface-0"]).toFixed(2)}:1`,
+  );
 }
 console.log(failed ? `\n${failed} check(s) below the minimum` : "\nall checks pass, in both themes");
 process.exit(failed ? 1 : 0);

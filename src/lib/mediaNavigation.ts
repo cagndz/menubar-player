@@ -42,11 +42,7 @@ function following<T extends Identified>(tracks: T[], currentId: string | null, 
  * Where a manual "next" goes, or null when there is nowhere to go. "Repeat
  * one" is ignored here: asking for the next track means the adjacent one.
  */
-export function nextTarget<T extends Identified>(
-  tracks: T[],
-  currentId: string | null,
-  repeat: RepeatMode,
-): T | null {
+export function nextTarget<T extends Identified>(tracks: T[], currentId: string | null, repeat: RepeatMode): T | null {
   const target = following(tracks, currentId, repeat);
   return target && target.id !== currentId ? target : null;
 }
@@ -73,11 +69,7 @@ export function previousTarget<T extends Identified>(
  * Which track controls make sense right now. "Next" needs another track to go
  * to; "previous" only needs a current track, since it can always restart it.
  */
-export function availableTrackActions<T extends Identified>(
-  tracks: T[],
-  currentId: string | null,
-  repeat: RepeatMode,
-) {
+export function availableTrackActions<T extends Identified>(tracks: T[], currentId: string | null, repeat: RepeatMode) {
   return {
     next: nextTarget(tracks, currentId, repeat) !== null,
     previous: currentId !== null,
@@ -85,11 +77,7 @@ export function availableTrackActions<T extends Identified>(
 }
 
 /** What happens when a track plays to its end. */
-export function afterEnded<T extends Identified>(
-  tracks: T[],
-  currentId: string | null,
-  repeat: RepeatMode,
-): EndedAction<T> {
+export function afterEnded<T extends Identified>(tracks: T[], currentId: string | null, repeat: RepeatMode): EndedAction<T> {
   if (repeat === "one") return { kind: "restart" };
 
   const target = following(tracks, currentId, repeat);

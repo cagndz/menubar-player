@@ -19,8 +19,7 @@ export function resolveStream(url: string): Promise<ResolvedAudio> {
 export const cachedStream = (id: string) => cache.peek(id);
 
 /** The stream last resolved for a track, if it will last through `remainingSeconds` of it. */
-export const reusableStream = (id: string, remainingSeconds: number) =>
-  cache.reusable(id, remainingSeconds, Date.now());
+export const reusableStream = (id: string, remainingSeconds: number) => cache.reusable(id, remainingSeconds, Date.now());
 
 /** Drops what is remembered for a track: it was removed, or its stream just failed. */
 export const forgetStream = (id: string) => cache.forget(id);

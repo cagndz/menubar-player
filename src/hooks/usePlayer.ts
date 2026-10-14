@@ -620,9 +620,7 @@ export function usePlayer(options: PlayerOptions) {
     (url: string, options: LoadOptions = {}) => {
       const { track, settle } = options;
       const resolve = (isCurrent: () => boolean) =>
-        settle && navigationRef.current
-          ? navigationRef.current.run(isCurrent, () => resolveStream(url))
-          : resolveStream(url);
+        settle && navigationRef.current ? navigationRef.current.run(isCurrent, () => resolveStream(url)) : resolveStream(url);
 
       const cached = track ? cachedStream(track.id) : null;
       if (!cached) {

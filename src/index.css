@@ -670,7 +670,9 @@ input {
   .slider[data-smooth="true"] :is(.slider-fill, .slider-rail) {
     transition: transform 1s linear;
   }
-  .slider:is(:hover, [data-force~="hover"], [data-force~="focus"], :has(input:focus-visible), [data-dragging="true"]):not([data-disabled="true"])
+  .slider:is(:hover, [data-force~="hover"], [data-force~="focus"], :has(input:focus-visible), [data-dragging="true"]):not(
+      [data-disabled="true"]
+    )
     .slider-thumb {
     opacity: 1;
   }

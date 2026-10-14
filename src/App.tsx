@@ -97,9 +97,7 @@ function App() {
     canNext: hasOtherTracks && transport.canNext,
   });
   useEffect(() => {
-    void setTrayMenu({ title: menu.title, playing: menu.playing, canToggle: menu.canToggle, canNext: menu.canNext }).catch(
-      () => {},
-    );
+    void setTrayMenu({ title: menu.title, playing: menu.playing, canToggle: menu.canToggle, canNext: menu.canNext }).catch(() => {});
   }, [menu.title, menu.playing, menu.canToggle, menu.canNext]);
 
   // An action chosen there happens with the popover closed, so if it fails the
@@ -149,8 +147,7 @@ function App() {
   );
 
   useEffect(() => {
-    const isTextField = (target: EventTarget | null) =>
-      target instanceof HTMLInputElement && target.type !== "range";
+    const isTextField = (target: EventTarget | null) => target instanceof HTMLInputElement && target.type !== "range";
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -224,18 +221,12 @@ function App() {
   );
 
   // What playback is waiting on, in words, for assistive technology.
-  const statusLabel = state.recovering
-    ? strings.status.recovering
-    : state.status === "loading"
-      ? strings.status.loading
-      : null;
+  const statusLabel = state.recovering ? strings.status.recovering : state.status === "loading" ? strings.status.loading : null;
 
   return (
     <>
       <PopoverView
-        urlInput={
-          <UrlInput ref={urlInputRef} onAdd={handleAdd} onEdit={clearAddNotice} onArrowDown={focusTrackList} />
-        }
+        urlInput={<UrlInput ref={urlInputRef} onAdd={handleAdd} onEdit={clearAddNotice} onArrowDown={focusTrackList} />}
         addNotice={addNotice}
         list={
           loaded && (

@@ -1,13 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  clampVolume,
-  effectiveVolume,
-  parseVolumeState,
-  stepVolume,
-  toggleMuted,
-  volumeLevel,
-  withVolume,
-} from "./volume";
+import { clampVolume, effectiveVolume, parseVolumeState, stepVolume, toggleMuted, volumeLevel, withVolume } from "./volume";
 
 describe("limits", () => {
   it("keeps the volume between 0 and 100", () => {

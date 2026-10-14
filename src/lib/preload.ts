@@ -22,11 +22,7 @@ interface Identified {
  * start. Nothing when that end restarts the same track (repeat one, or repeat
  * all on a single track) or stops.
  */
-export function preloadTarget<T extends Identified>(
-  tracks: T[],
-  currentId: string | null,
-  repeat: RepeatMode,
-): T | null {
+export function preloadTarget<T extends Identified>(tracks: T[], currentId: string | null, repeat: RepeatMode): T | null {
   const action = afterEnded(tracks, currentId, repeat);
   return action.kind === "play" ? action.track : null;
 }

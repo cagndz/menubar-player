@@ -30,13 +30,7 @@ describe("PlayerControls", () => {
   it("is tabbed through as bar, repeat, previous, play/pause, next, as it reads", () => {
     setup();
 
-    expect(tabStops(document.body).map(label)).toEqual([
-      "Progress",
-      "Repeat: all",
-      "Previous track",
-      "Pause",
-      "Next track",
-    ]);
+    expect(tabStops(document.body).map(label)).toEqual(["Progress", "Repeat: all", "Previous track", "Pause", "Next track"]);
   });
 
   it("calls the shared previous and next handlers", () => {
@@ -139,4 +133,3 @@ describe("PlayerControls progress bar motion", () => {
     expect(tip.dataset.shown).toBe("false");
   });
 });
-

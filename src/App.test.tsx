@@ -314,8 +314,7 @@ describe("preloading the next track", () => {
   }
 
   /** How many times the next track ("b") has been resolved. */
-  const resolutionsOfNext = () =>
-    backend.resolveAudio.mock.calls.filter(([url]) => url === saved("b").url).length;
+  const resolutionsOfNext = () => backend.resolveAudio.mock.calls.filter(([url]) => url === saved("b").url).length;
 
   const fire = (audio: HTMLAudioElement, type: string) => act(async () => void audio.dispatchEvent(new Event(type)));
 
@@ -374,9 +373,7 @@ describe("preloading the next track", () => {
     backend.upsertTrack.mockResolvedValue([saved("a"), saved("b")]);
     let finishPreload!: (value: ResolvedAudio) => void;
     backend.resolveAudio.mockImplementation((url: string) =>
-      url.endsWith("=a")
-        ? Promise.resolve(fresh("a"))
-        : new Promise<ResolvedAudio>((resolve) => (finishPreload = resolve)),
+      url.endsWith("=a") ? Promise.resolve(fresh("a")) : new Promise<ResolvedAudio>((resolve) => (finishPreload = resolve)),
     );
     const { audio, media } = await playUntilPreload();
 
@@ -698,8 +695,7 @@ describe("reusing a stream resolved earlier", () => {
   });
 
   let life = 6 * HOURS;
-  const resolutionsOf = (id: string) =>
-    backend.resolveAudio.mock.calls.filter(([url]) => url === saved(id).url).length;
+  const resolutionsOf = (id: string) => backend.resolveAudio.mock.calls.filter(([url]) => url === saved(id).url).length;
 
   beforeEach(() => {
     life = 6 * HOURS;
@@ -825,8 +821,7 @@ describe("pressing next several times in a row", () => {
   const HOURS = 3600;
   const lasting = (id: string): ResolvedAudio => ({ ...resolved(id), expiresAt: Date.now() / 1000 + 6 * HOURS });
   const library = () => ["a", "b", "c", "d"].map(saved);
-  const resolutionsOf = (id: string) =>
-    backend.resolveAudio.mock.calls.filter(([url]) => url === saved(id).url).length;
+  const resolutionsOf = (id: string) => backend.resolveAudio.mock.calls.filter(([url]) => url === saved(id).url).length;
   const header = () => document.querySelector('[data-slot="track-title"]')?.textContent || null;
   const currentRow = () => document.querySelector('li[aria-current="true"]')?.textContent ?? null;
 
@@ -1013,7 +1008,6 @@ describe("volume", () => {
     expect(audio.volume).toBeCloseTo(0.4);
   });
 });
-
 
 describe("menu behind a right click on the icon", () => {
   beforeEach(() => {

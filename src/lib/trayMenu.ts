@@ -42,8 +42,5 @@ export function trackToStart(tracks: Track[], currentId: string | null): Track |
   const current = tracks.find((track) => track.id === currentId);
   if (current) return current;
   // The library comes newest last, so on a tie the last one wins.
-  return tracks.reduce<Track | null>(
-    (latest, track) => (latest && latest.lastPlayedAt > track.lastPlayedAt ? latest : track),
-    null,
-  );
+  return tracks.reduce<Track | null>((latest, track) => (latest && latest.lastPlayedAt > track.lastPlayedAt ? latest : track), null);
 }

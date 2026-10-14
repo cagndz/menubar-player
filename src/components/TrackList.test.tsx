@@ -152,7 +152,15 @@ describe("TrackList revealing a track", () => {
     Element.prototype.scrollIntoView = scrollIntoView;
     const ref = createRef<TrackListHandle>();
     const list = (ids: string[]) => (
-      <TrackList ref={ref} tracks={ids.map(track)} currentId={null} playing={false} onPlay={vi.fn()} onDelete={vi.fn()} onExitUp={vi.fn()} />
+      <TrackList
+        ref={ref}
+        tracks={ids.map(track)}
+        currentId={null}
+        playing={false}
+        onPlay={vi.fn()}
+        onDelete={vi.fn()}
+        onExitUp={vi.fn()}
+      />
     );
     const { rerender } = render(list(["a", "b"]));
 

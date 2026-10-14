@@ -1,9 +1,6 @@
 import type { ResolvedAudio, Track } from "./tauri";
 
-export type AddResult =
-  | { kind: "added"; track: Track }
-  | { kind: "duplicate"; track: Track }
-  | { kind: "error"; error: unknown };
+export type AddResult = { kind: "added"; track: Track } | { kind: "duplicate"; track: Track } | { kind: "error"; error: unknown };
 
 interface AddDependencies {
   resolve: (url: string) => Promise<ResolvedAudio>;

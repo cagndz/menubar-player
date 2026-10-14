@@ -9,10 +9,12 @@ function setup() {
   /** Simulates a press: it becomes the latest one, and asks for `resolve` to run. */
   const press = (resolve: () => Promise<string>) => {
     const mine = ++latest;
-    const outcome = queue.run(() => mine === latest, resolve).then(
-      (value) => value,
-      (error) => error,
-    );
+    const outcome = queue
+      .run(() => mine === latest, resolve)
+      .then(
+        (value) => value,
+        (error) => error,
+      );
     return outcome;
   };
   const settle = async () => {

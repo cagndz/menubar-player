@@ -31,7 +31,20 @@ interface SliderProps {
  * assistive technology working.
  */
 export function Slider(props: SliderProps) {
-  const { value, max, disabled = false, orientation = "horizontal", formatTip, state, onScrub, onCommit, live, smooth = false, force, inputProps } = props;
+  const {
+    value,
+    max,
+    disabled = false,
+    orientation = "horizontal",
+    formatTip,
+    state,
+    onScrub,
+    onCommit,
+    live,
+    smooth = false,
+    force,
+    inputProps,
+  } = props;
   const rootRef = useRef<HTMLDivElement>(null);
   // The value under the pointer, kept after it leaves so the label can fade out in place.
   const [hover, setHover] = useState(0);

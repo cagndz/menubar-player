@@ -1,11 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import {
-  canReachYoutube,
-  createStallDetector,
-  createStallWatch,
-  isExpiring,
-  needsStallWatch,
-} from "./recovery";
+import { canReachYoutube, createStallDetector, createStallWatch, isExpiring, needsStallWatch } from "./recovery";
 
 describe("createStallDetector", () => {
   const stalled = (now: number, overrides = {}) => ({ now, wantsPlaying: true, readyState: 2, currentTime: 100, ...overrides });
@@ -178,4 +172,3 @@ describe("createStallWatch", () => {
     expect(fired).toBe(1);
   });
 });
-

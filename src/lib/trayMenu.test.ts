@@ -31,7 +31,10 @@ describe("trayMenu", () => {
 
   it("offers nothing while a track is loading or reconnecting", () => {
     expect(trayMenu({ ...snapshot, status: "loading", canNext: true })).toMatchObject({ canToggle: false, canNext: false });
-    expect(trayMenu({ ...snapshot, status: "playing", recovering: true, canNext: true })).toMatchObject({ canToggle: false, canNext: false });
+    expect(trayMenu({ ...snapshot, status: "playing", recovering: true, canNext: true })).toMatchObject({
+      canToggle: false,
+      canNext: false,
+    });
   });
 
   it("offers Next when there is a track to go to", () => {

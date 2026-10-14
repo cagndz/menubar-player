@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useRef, type RefObject } from "react";
-import {
-  afterEnded,
-  availableTrackActions,
-  createAdvanceGuard,
-  nextTarget,
-  previousTarget,
-  type RepeatMode,
-} from "../lib/mediaNavigation";
+import { afterEnded, availableTrackActions, createAdvanceGuard, nextTarget, previousTarget, type RepeatMode } from "../lib/mediaNavigation";
 import { createPreloader, isPreloadDue, preloadTarget } from "../lib/preload";
 import { resolveStream, reusableStream } from "../lib/resolver";
 import { debugLog, type ResolvedAudio, type Track } from "../lib/tauri";

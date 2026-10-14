@@ -56,8 +56,7 @@ export function useMediaSession(options: MediaSessionOptions) {
 
   useEffect(() => {
     if (!supported) return;
-    navigator.mediaSession.playbackState =
-      status === "playing" ? "playing" : status === "paused" ? "paused" : "none";
+    navigator.mediaSession.playbackState = status === "playing" ? "playing" : status === "paused" ? "paused" : "none";
     reportPosition();
   }, [supported, status, recovering, duration, reportPosition]);
 
@@ -78,8 +77,14 @@ export function useMediaSession(options: MediaSessionOptions) {
 
     setHandler("play", handle("play", play));
     setHandler("pause", handle("pause", pause));
-    setHandler("seekforward", handle("seekforward", () => seek(currentTime() + SKIP_SECONDS)));
-    setHandler("seekbackward", handle("seekbackward", () => seek(currentTime() - SKIP_SECONDS)));
+    setHandler(
+      "seekforward",
+      handle("seekforward", () => seek(currentTime() + SKIP_SECONDS)),
+    );
+    setHandler(
+      "seekbackward",
+      handle("seekbackward", () => seek(currentTime() - SKIP_SECONDS)),
+    );
     setHandler("seekto", (details) => {
       debugLog(`[media] seekto ${details.seekTime}`);
       if (details.seekTime != null) seek(details.seekTime);

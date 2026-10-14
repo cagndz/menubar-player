@@ -88,7 +88,8 @@ export function RemoveIcon() {
   );
 }
 
-const loop = "M3 7.250V6.500a2 2 0 0 1 2-2h7.250M10.500 2.750 12.250 4.500 10.500 6.250M13 8.750v.750a2 2 0 0 1-2 2H3.750M5.500 13.250 3.750 11.500 5.500 9.750";
+const loop =
+  "M3 7.250V6.500a2 2 0 0 1 2-2h7.250M10.500 2.750 12.250 4.500 10.500 6.250M13 8.750v.750a2 2 0 0 1-2 2H3.750M5.500 13.250 3.750 11.500 5.500 9.750";
 
 /** Plain loop arrows: repeat off (dimmed) and repeat all (with a dot under it, drawn by the button). */
 export function RepeatIcon() {
