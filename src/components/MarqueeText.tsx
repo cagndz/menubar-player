@@ -13,6 +13,9 @@ const RETURN_MS = 200;
 
 const easeOut = `cubic-bezier(${EASE_OUT.join(", ")})`;
 
+/** The title scrolling right now, if any: only one at a time. Calling it sends it home. */
+let scrolling: (() => void) | null = null;
+
 interface MarqueeTextProps {
   text: string;
   className?: string;
@@ -45,6 +48,8 @@ export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
   const [engaged, setEngaged] = useState(false);
   const [running, setRunning] = useState(false);
   const reducedMotion = useReducedMotion();
+  // How another title starting to scroll sends this one back to its start.
+  const [stop] = useState(() => () => setEngaged(false));
 
   // The title's own width and the box's, remeasured when either changes size.
   useEffect(() => {
@@ -132,6 +137,8 @@ export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
   useEffect(() => {
     const track = trackRef.current;
     if (!running || !track || typeof track.animate !== "function" || loopRef.current) return;
+    if (scrolling !== stop) scrolling?.();
+    scrolling = stop;
     // One pass moves the title and its gap along at a constant speed, with no
     // stop: the copy comes round into the title's place and carries straight on.
     loopRef.current = track.animate([{ transform: "translateX(0)" }, { transform: `translateX(${-distance}px)` }], {
@@ -139,15 +146,21 @@ export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
       easing: "linear",
       iterations: Infinity,
     });
-  }, [running, distance]);
+  }, [running, distance, stop]);
+
+  // Still: no longer the one scrolling.
+  useEffect(() => {
+    if (!running && scrolling === stop) scrolling = null;
+  }, [running, stop]);
 
   // Nothing is left running once the title goes away.
   useEffect(() => {
     const track = trackRef.current;
     return () => {
       for (const animation of track?.getAnimations?.() ?? []) animation.cancel();
+      if (scrolling === stop) scrolling = null;
     };
-  }, []);
+  }, [stop]);
 
   return (
     <span

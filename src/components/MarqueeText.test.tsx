@@ -161,4 +161,30 @@ describe("MarqueeText", () => {
     await act(() => vi.advanceTimersByTimeAsync(5000));
     expect(animate).not.toHaveBeenCalled();
   });
+
+  it("never scrolls two titles at once: the one that starts sends the other home", async () => {
+    layout({ text: 600, box: 200 });
+    animate.mockImplementation(() => ({ finished: Promise.resolve(), cancel: vi.fn() }));
+    render(
+      <>
+        <div data-marquee-host data-testid="first">
+          <MarqueeText text="First title that does not fit" />
+        </div>
+        <div data-marquee-host data-testid="second">
+          <MarqueeText text="Second title that does not fit" />
+        </div>
+      </>,
+    );
+    const running = () => Array.from(document.querySelectorAll(".marquee")).map((box) => (box as HTMLElement).dataset.running);
+
+    fireEvent.pointerEnter(screen.getByTestId("first"));
+    await act(() => vi.advanceTimersByTimeAsync(600));
+    expect(running()).toEqual(["true", "false"]);
+
+    fireEvent.keyDown(document, { key: "ArrowDown" });
+    act(() => screen.getByTestId("second").setAttribute("tabindex", "0"));
+    act(() => screen.getByTestId("second").focus());
+    await act(() => vi.advanceTimersByTimeAsync(600));
+    expect(running()).toEqual(["false", "true"]);
+  });
 });
