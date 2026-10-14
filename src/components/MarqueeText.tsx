@@ -23,8 +23,8 @@ interface MarqueeTextProps {
  * A title that ends in an ellipsis when it doesn't fit, and scrolls through
  * the rest while the pointer or the keyboard focus rests on what holds it
  * (the nearest `[data-marquee-host]`). Only if it doesn't fit, and never with
- * Reduce Motion. The full title is always the tooltip and what assistive
- * technology reads.
+ * Reduce Motion, when the full title is the tooltip instead. Assistive
+ * technology always reads it whole.
  */
 export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
   const boxRef = useRef<HTMLSpanElement>(null);
@@ -148,7 +148,14 @@ export function MarqueeText({ text, className = "" }: MarqueeTextProps) {
   }, [active, overflow]);
 
   return (
-    <span ref={boxRef} className={`marquee ${className}`} data-running={running} title={text}>
+    <span
+      ref={boxRef}
+      className={`marquee ${className}`}
+      data-running={running}
+      // The scroll shows the whole title, and a tooltip would cover the controls; with
+      // Reduce Motion it never scrolls, so then the tooltip is the way to read it whole.
+      title={reducedMotion && overflow > 0 ? text : undefined}
+    >
       <span ref={textRef} className="marquee-text">
         {text}
       </span>

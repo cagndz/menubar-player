@@ -46,7 +46,16 @@ afterEach(() => {
 });
 
 describe("MarqueeText", () => {
-  it("keeps the whole title as the tooltip and in the text read aloud", async () => {
+  it("reads the whole title aloud, with no tooltip to cover the controls", async () => {
+    layout({ text: 600, box: 200 });
+    setup();
+
+    expect(screen.getByText(LONG)).toBeTruthy();
+    expect(document.querySelector("[title]")).toBeNull();
+  });
+
+  it("shows the whole title as a tooltip with Reduce Motion, when it can't scroll", async () => {
+    reduceMotion(true);
     layout({ text: 600, box: 200 });
     setup();
 
