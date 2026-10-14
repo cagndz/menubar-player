@@ -4,6 +4,8 @@ import { SpinnerIcon } from "./icons";
 
 export interface UrlInputHandle {
   focus: () => void;
+  /** Puts the text in the field and adds it, exactly as typing it and pressing Add would. */
+  add: (text: string) => void;
 }
 
 interface UrlInputProps {
@@ -19,9 +21,46 @@ interface UrlInputProps {
 export function UrlInput({ ref, onAdd, onEdit, onArrowDown }: UrlInputProps) {
   const [url, setUrl] = useState("");
   const [adding, setAdding] = useState(false);
+  const addingRef = useRef(false);
+  const onEditRef = useRef(onEdit);
+  onEditRef.current = onEdit;
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useImperativeHandle(ref, () => ({ focus: () => inputRef.current?.focus() }), []);
+  const add = async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || addingRef.current) return;
+
+    addingRef.current = true;
+    setAdding(true);
+    try {
+      if (await onAdd(trimmed)) {
+        setUrl("");
+      } else {
+        // The link stays, selected, so pasting another one replaces it at once.
+        inputRef.current?.focus();
+        inputRef.current?.select();
+      }
+    } finally {
+      addingRef.current = false;
+      setAdding(false);
+    }
+  };
+  // The handle is made once; it calls whatever `add` is current.
+  const addRef = useRef(add);
+  addRef.current = add;
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => inputRef.current?.focus(),
+      add: (text) => {
+        setUrl(text);
+        onEditRef.current();
+        void addRef.current(text);
+      },
+    }),
+    [],
+  );
 
   // The popover is one long-lived window: every time it opens, typing should just work.
   useEffect(() => {
@@ -37,23 +76,9 @@ export function UrlInput({ ref, onAdd, onEdit, onArrowDown }: UrlInputProps) {
     }
   };
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    const trimmed = url.trim();
-    if (!trimmed || adding) return;
-
-    setAdding(true);
-    try {
-      if (await onAdd(trimmed)) {
-        setUrl("");
-      } else {
-        // The link stays, selected, so pasting another one replaces it at once.
-        inputRef.current?.focus();
-        inputRef.current?.select();
-      }
-    } finally {
-      setAdding(false);
-    }
+    void add(url);
   };
 
   return (

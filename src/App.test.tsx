@@ -208,6 +208,52 @@ describe("adding a track", () => {
   });
 });
 
+describe("pasting with ⌘V away from the field", () => {
+  /** A paste with this text on the clipboard, wherever the focus is. */
+  const paste = (text: string) =>
+    act(async () => {
+      const event = new Event("paste", { bubbles: true, cancelable: true });
+      Object.defineProperty(event, "clipboardData", { value: { getData: () => text } });
+      (document.activeElement ?? document.body).dispatchEvent(event);
+    });
+
+  it("adds a YouTube link straight from the clipboard, as the field would", async () => {
+    backend.resolveAudio.mockResolvedValue(resolved("b"));
+    backend.upsertTrack.mockResolvedValue([saved("a"), saved("b")]);
+    const { input } = await renderApp([saved("a")]);
+    act(() => screen.getByRole("listitem").focus());
+
+    await paste("https://youtu.be/b");
+
+    expect(backend.resolveAudio).toHaveBeenCalledExactlyOnceWith("https://youtu.be/b");
+    expect(backend.upsertTrack).toHaveBeenCalledExactlyOnceWith(resolved("b"));
+    expect(await screen.findByText("Track b")).toBeTruthy();
+    expect(input.value).toBe("");
+  });
+
+  it("puts anything else in the field, with the usual error and the text selected", async () => {
+    backend.resolveAudio.mockRejectedValue({ code: "not_youtube", detail: null });
+    const { input } = await renderApp([saved("a")]);
+    act(() => screen.getByRole("listitem").focus());
+
+    await paste("https://example.com/video");
+
+    expect(input.value).toBe("https://example.com/video");
+    expect(screen.getByRole("alert").textContent).toBe("That isn't a YouTube link. Paste a YouTube video URL.");
+    expect(document.activeElement).toBe(input);
+    expect([input.selectionStart, input.selectionEnd]).toEqual([0, input.value.length]);
+  });
+
+  it("leaves a paste into the field to the field", async () => {
+    const { input } = await renderApp([saved("a")]);
+    act(() => input.focus());
+
+    await paste("https://youtu.be/b");
+
+    expect(backend.resolveAudio).not.toHaveBeenCalled();
+  });
+});
+
 describe("menu bar icon", () => {
   it("shows the pause sign until something plays, level bars while it does, and the pause sign again in pause", async () => {
     backend.setTrayState.mockClear();

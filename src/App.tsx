@@ -181,6 +181,26 @@ function App() {
   const focusUrlInput = useCallback(() => urlInputRef.current?.focus(), []);
   const focusTrackList = useCallback(() => void trackListRef.current?.focusFirst(), []);
 
+  // ⌘V anywhere in the popover adds the link on the clipboard, as if it had
+  // been pasted into the field and added. The paste event carries the text,
+  // so no clipboard permission is needed. A text field keeps its own paste.
+  useEffect(() => {
+    const onPaste = (event: ClipboardEvent) => {
+      const target = document.activeElement;
+      const editable =
+        (target instanceof HTMLInputElement && target.type !== "range") ||
+        target instanceof HTMLTextAreaElement ||
+        (target instanceof HTMLElement && target.isContentEditable);
+      if (editable) return;
+      const text = event.clipboardData?.getData("text/plain").trim();
+      if (!text) return;
+      event.preventDefault();
+      urlInputRef.current?.add(text);
+    };
+    document.addEventListener("paste", onPaste);
+    return () => document.removeEventListener("paste", onPaste);
+  }, []);
+
   // Outcome of the last "Add", shown under the field until the text changes.
   const [addNotice, setAddNotice] = useState<{ kind: "info" | "error"; text: string } | null>(null);
   const clearAddNotice = useCallback(() => setAddNotice(null), []);

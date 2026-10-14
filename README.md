@@ -21,7 +21,8 @@ https://github.com/user-attachments/assets/7eae8b50-8037-4816-91d2-a9311b0a73d5
 - **Recovers by itself.** Stream links expire after a few hours; the app notices, asks for a new one and carries
   on from the same second.
 - **Keyboard first.** Tab follows the visual order, the arrow keys move through the library, Enter plays, Delete
-  removes, Space toggles playback, M mutes and the arrows seek by 1 s (10 s with Shift) on the progress bar.
+  removes, Space toggles playback, M mutes, ⌘V adds the link on the clipboard from anywhere in the popover, and the
+  arrows seek by 1 s (10 s with Shift) on the progress bar.
 - **Dark and light**, following the system, and it respects Reduce Motion.
 
 <img src="assets/screenshot-volume-light.png" width="840" alt="The popover in light mode, with the volume slider open">
