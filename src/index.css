@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@fontsource-variable/inter";
 
 /* ---------------------------------------------------------------------------
    Tokens. Names are semantic: components never mention a colour, so the two
@@ -28,8 +27,8 @@
   --color-danger: #eb5757;
   --color-danger-surface: #2a1618;
 
-  /* Inter ships with the app (no network); the system font covers what it lacks. */
-  --font-sans: "Inter Variable", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  /* The system's own font (SF Pro on macOS), so the popover reads like the menus around it. */
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 
   --text-label: 11px;
   --text-label--line-height: 16px;
@@ -108,8 +107,6 @@ body {
   font-size: var(--text-body);
   line-height: var(--text-body--line-height);
   color: var(--color-text);
-  /* Inter's alternates: open digits, single-storey shapes. */
-  font-feature-settings: "cv01", "ss03";
   -webkit-font-smoothing: antialiased;
   user-select: none;
   -webkit-user-select: none;
@@ -150,7 +147,7 @@ input {
     font-size: var(--text-label);
     line-height: var(--text-label--line-height);
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--color-text-muted);
   }
