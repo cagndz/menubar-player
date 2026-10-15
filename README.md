@@ -1,34 +1,22 @@
 # Menubar Player
 
-An audio player for YouTube that lives in the macOS menu bar. Paste a link, close the popover and keep working.
+Listen to YouTube from the macOS menu bar. Paste a link, close the popover and keep working.
 It remembers where you stopped in every track.
 
+https://github.com/user-attachments/assets/71ed81d2-0e74-4f9e-beea-65d074b55f68
 
-https://github.com/user-attachments/assets/7da80938-6fea-4fda-81fd-0a23e5021806
-
-<img src="assets/screenshot-playing-light.png" width="840" alt="The popover open under its menu bar icon in light mode, playing the last track of the library">
-
-
+<img src="assets/screenshot-playing-dark.png" width="840" alt="Menubar Player open under its menu bar icon, in dark mode">
 
 ## Features
 
-- **Lives in the menu bar.** No Dock icon and no window: a small popover under an icon that shows level bars
-  while something plays and a pause sign when nothing does.
-- **Paste and play.** ⌘V adds the YouTube link on the clipboard from anywhere in the popover. Titles too long for
-  their row scroll into view when you rest the pointer or the keyboard focus on them.
-- **A library that remembers.** Every track keeps its position, so a three-hour podcast resumes where you left
-  it, even after quitting. Removing a track can be undone.
-- **Keeps playing with the popover closed**, moves on to the next track by itself and repeats the library or a
-  single track.
-- **Media keys**: play, pause, previous and next.
-- **A menu on right click**: play or pause, skip to the next track, launch at login and quit.
-- **Recovers by itself.** Stream links expire after a few hours; the app notices, asks for a new one and carries
-  on from the same second. If yt-dlp is missing or out of date, the message says so and offers the Homebrew
-  command to fix it, ready to copy.
-- **Volume on hover.** The slider unrolls beside the speaker when you point at it; a click mutes.
-- **Keyboard first.** Tab follows the visual order, the arrow keys move through the library, Enter plays, Delete
-  removes, Space toggles playback, M mutes and the arrows seek by 1 s (10 s with Shift) on the progress bar.
-- **Dark and light**, following the system, and it respects Reduce Motion.
+- **Picks up where you left off.** Every track keeps its position, even after you quit. Built for long mixes,
+  live sets and podcasts.
+- **Stays out of the way.** No Dock icon and no window. Close the popover and the music keeps playing, moving on
+  to the next track or repeating the one you're on.
+- **Paste to add.** ⌘V anywhere in the popover adds the YouTube link on your clipboard.
+- **Media keys and keyboard.** Play, pause and skip from your keyboard; the whole popover works without a mouse.
+- **Recovers on its own.** YouTube's stream links expire after a few hours; the app fetches a new one and carries
+  on from the same second.
 
 ## Install
 
@@ -40,17 +28,18 @@ For Apple Silicon Macs with macOS 14 or later.
 brew install --cask cagndz/tap/menubar-player
 ```
 
-This also installs [yt-dlp](https://github.com/yt-dlp/yt-dlp), which the app uses to find the audio of each
-video.
+This also installs [yt-dlp](https://github.com/yt-dlp/yt-dlp), which the app uses to find the audio of each video.
 
 ### Download
 
-Download the DMG from the [latest release](https://github.com/cagndz/menubar-player/releases/latest), open it
-and drag the app to Applications. The app needs yt-dlp, so install it too:
+Download the DMG from the [latest release](https://github.com/cagndz/menubar-player/releases/latest), open it and
+drag the app to Applications. The app needs yt-dlp, so install it too:
 
 ```sh
 brew install yt-dlp
 ```
+
+If yt-dlp is missing or out of date, the app tells you and shows the command to fix it.
 
 ### First launch
 
@@ -71,7 +60,7 @@ pnpm tauri build   # the app and its DMG, in src-tauri/target/release/bundle
 pnpm test          # frontend tests
 pnpm lint          # ESLint, no warnings allowed
 pnpm format:check  # Prettier
-pnpm contrast      # every colour pairing of both themes against WCAG AA
+pnpm contrast      # every color pairing of both themes against WCAG AA
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
@@ -85,7 +74,7 @@ Built with Tauri 2, Rust, React, TypeScript, Tailwind CSS 4 and Motion.
 - YouTube may ask for a sign-in check on some networks. The app reports it and backs off; it does not use
   browser cookies or any other way around it.
 - Single videos only; playlist links are not expanded.
-- Videos with several audio tracks (auto-dubbed ones) play the track in the original language.
+- Videos with several audio tracks (auto-dubbed ones) play the original language.
 - Apple Silicon only, and not signed with an Apple developer certificate.
 
 ## Disclaimer
